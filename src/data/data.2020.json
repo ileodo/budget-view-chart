@@ -1,0 +1,260 @@
+[
+  {
+    "name": "Mortgage",
+    "description": [
+      "Mortgage"
+    ],
+    "monthlyBudget": {
+      "amount": 1000
+    },
+    "monthlyAmount": {
+      "amount": [
+        800,
+        800,
+        800,
+        800,
+        800,
+        800,
+        800,
+        800,
+        800,
+        950,
+        800,
+        950
+      ]
+    }
+  },
+  {
+    "name": "Groceries & Eating Out",
+    "description": [
+      "Groceries",
+      "Eating Out"
+    ],
+    "monthlyBudget": {
+      "amount": 500
+    },
+    "monthlyAmount": {
+      "amount": [
+        113,
+        600,
+        452,
+        762,
+        523,
+        11,
+        1000,
+        153.35,
+        350.36,
+        630,
+        800,
+        352
+      ]
+    }
+  },
+  {
+    "name": "Shopping",
+    "description": [
+      "Shopping",
+      "Personal Care",
+      "Tech Gear",
+      "Clothes"
+    ],
+    "monthlyBudget": {
+      "amount": 500
+    },
+    "monthlyAmount": {
+      "amount": [
+        -300,
+        400,
+        -700,
+        1200,
+        800,
+        425,
+        685,
+        523,
+        800,
+        452,
+        762,
+        52
+      ]
+    }
+  },
+  {
+    "name": "Other",
+    "description": [
+      "Experiences",
+      "Holiday",
+      "General",
+      "Giving"
+    ],
+    "monthlyBudget": {
+      "amount": 300
+    },
+    "monthlyAmount": {
+      "amount": [
+        300,
+        300,
+        0,
+        0,
+        1500,
+        0,
+        0,
+        500,
+        0,
+        300,
+        0,
+        0
+      ]
+    }
+  },
+  {
+    "name": "Transport",
+    "description": [
+      "Car",
+      "Transport"
+    ],
+    "monthlyBudget": {
+      "amount": 200
+    },
+    "monthlyAmount": {
+      "amount": [
+        200,
+        123,
+        0,
+        65.23,
+        0,
+        12.23,
+        44.44,
+        0,
+        78,
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  {
+    "name": "Bills",
+    "description": [
+      "Bills"
+    ],
+    "monthlyBudget": {
+      "amount": 300
+    },
+    "monthlyAmount": {
+      "amount": [
+        250,
+        460,
+        0,
+        250,
+        460,
+        0,
+        250,
+        460,
+        0,
+        250,
+        460,
+        0
+      ]
+    }
+  },
+  {
+    "name": "Household",
+    "description": [
+      "Household"
+    ],
+    "monthlyBudget": {
+      "amount": 100
+    },
+    "monthlyAmount": {
+      "amount": [
+        0,
+        80,
+        0,
+        0,
+        32,
+        0,
+        0,
+        500,
+        0,
+        400,
+        100,
+        0
+      ]
+    }
+  },
+  {
+    "name": "Saving",
+    "description": [
+      "Savings"
+    ],
+    "monthlyBudget": {
+      "amount": 400
+    },
+    "monthlyAmount": {
+      "amount": [
+        350,
+        400,
+        350,
+        400,
+        350,
+        400,
+        350,
+        400,
+        350,
+        400,
+        350,
+        400
+      ]
+    }
+  },
+  {
+    "name": "Investment",
+    "description": [
+      "Investment"
+    ],
+    "monthlyBudget": {
+      "amount": 300
+    },
+    "monthlyAmount": {
+      "amount": [
+        300,
+        300,
+        300,
+        300,
+        300,
+        300,
+        300,
+        0,
+        0,
+        300,
+        300,
+        0
+      ]
+    }
+  },
+  {
+    "name": "Yearly Bill",
+    "description": [
+      "Yearly Bill"
+    ],
+    "monthlyBudget": {
+      "amount": 150
+    },
+    "monthlyAmount": {
+      "amount": [
+        700,
+        0,
+        0,
+        0,
+        0,
+        1500,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  }
+]
