@@ -2,16 +2,8 @@ import './App.css';
 import React, {useState, useEffect} from 'react';
 import {
     Dropdown,
-    Spinner,
     Container,
-    Alert,
     Form,
-    ProgressBar,
-    ListGroup,
-    Badge,
-    Button,
-    OverlayTrigger,
-    Tooltip,
     Row, Col
 } from 'react-bootstrap';
 
@@ -56,7 +48,7 @@ export const App: React.FC = (props) => {
             ...config,
             showAggregate: showAggregate
         })
-    }, [showAggregate])
+    }, [showAggregate, config])
 
     return (
         <Container as="main" className='py-4'>
