@@ -16,15 +16,16 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 
 import {BudgetChart, BudgetRecord, BudgetChartConfig} from 'budget-view-chart'
 
-const DATA_SET:string[]=[
+const DATA_SET: string[] = [
     "data.2021.json",
     "data.2022.json",
     "data.2023.json"
 ]
 
-function loadData(name:string):BudgetRecord[]{
+function loadData(name: string): BudgetRecord[] {
     return require(`./data/${name}`)
 }
+
 const defaultConfig: BudgetChartConfig = {
     year: 2023,
     month: 10,
@@ -44,11 +45,11 @@ export const App: React.FC = (props) => {
 
 
     useEffect(() => {
-        setConfig({
-            ...config,
+        setConfig((prevConfig) => ({
+            ...prevConfig,
             showAggregate: showAggregate
-        })
-    }, [showAggregate, config])
+        }))
+    }, [showAggregate])
 
     return (
         <Container as="main" className='py-4'>
@@ -80,7 +81,7 @@ export const App: React.FC = (props) => {
 
                 </div>
             </Container>
-            <Container  className="p-5 align-items-md-stretch h-100 bg-light border rounded-3 shadow">
+            <Container className="p-5 align-items-md-stretch h-100 bg-light border rounded-3 shadow">
                 <Row>
                     <Col className="col-md-6">
                         <h3 className='pb-3 px-3 px-md-0 border-bottom'>Config</h3>
@@ -108,8 +109,9 @@ export const App: React.FC = (props) => {
                                     <Dropdown.Menu>
                                         {
                                             DATA_SET.map(
-                                                (name:string)=>
-                                                    <Dropdown.Item key={name} eventKey={name} onClick={() => setDataSet(name)}>{name}</Dropdown.Item>
+                                                (name: string) =>
+                                                    <Dropdown.Item key={name} eventKey={name}
+                                                                   onClick={() => setDataSet(name)}>{name}</Dropdown.Item>
                                             )
                                         }
                                     </Dropdown.Menu>
