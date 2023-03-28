@@ -41,17 +41,17 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
     - name: Run install
-      working-directory: ./demo
       uses: borales/actions-yarn@v4
       with:
         cmd: install
+        dir: ./demo
     - name: Build
-      working-directory: ./demo
       env:
-        PUBLIC_URL:https://ileodo.github.io/budget-view-chart/
+        PUBLIC_URL: https://ileodo.github.io/budget-view-chart/
       uses: borales/actions-yarn@v4
       with:
         cmd: build
+        dir: ./demo
     - name: Setup Pages
       uses: actions/configure-pages@v3
     - name: Upload artifact
