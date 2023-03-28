@@ -28,7 +28,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [14.x, 16.x, 18.x]
+        node-version: [18.x]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
@@ -54,7 +54,7 @@ jobs:
           dir: ./demo
       - name: build demo
         env:
-          PUBLIC_URL: https://ileodo.github.io/budget-view-chart/
+          PUBLIC_URL: /budget-view-chart
         uses: borales/actions-yarn@v4
         with:
           cmd: build
