@@ -1,4 +1,4 @@
-import './App.css';
+
 import React, { useRef, useEffect } from 'react';
 import ReactECharts from 'echarts-for-react';
 import {BudgetRecord } from './data.interface'
@@ -13,52 +13,46 @@ const TOTAL_Y = 100;
 
 // HELPERS:
 
-function round(number: number, precision: number) {
-    const level = 10 ** precision;
-    return Math.round((number + Number.EPSILON) * level) / level;
-}
 
-// function hexToRGB(hex: string, alpha: number): string {
-//     var r = parseInt(hex.slice(1, 3), 16),
-//         g = parseInt(hex.slice(3, 5), 16),
-//         b = parseInt(hex.slice(5, 7), 16);
-
-//     if (alpha) {
-//         return "rgba(" + r + ", " + g + ", " + b + ", " + alpha + ")";
-//     } else {
-//         return "rgb(" + r + ", " + g + ", " + b + ")";
-//     }
-// }
-
-function displayAmount(amount: number) {
-    let formatter = new Intl.NumberFormat('en-GB', {
-        style: 'currency',
-        currency: 'GBP',
-    });
-
-    return formatter.format(amount);
-}
-
-
-
-interface BudgetChartProps {
+export interface BudgetChartConfig {
     year: number,
     month: number,
     showCurrentLine?: boolean,
     showAggregate: boolean,
+}
+
+export interface BudgetChartProps {
+    config: BudgetChartConfig,
     value: BudgetRecord[]
 }
 
 
 
-const BudgetChart: React.FC<BudgetChartProps> = (props) => {
+export const BudgetChart: React.FC<BudgetChartProps> = (props) => {
     const instance = useRef<ReactECharts>(null);
-    const month: number = props.month;
 
+    const config: BudgetChartConfig = props.config
     const budgetBreakdowns: BudgetRecord[] = props.value;
 
+    const month: number = config.month;
+
     const dataProcessor = new DataProcessor(budgetBreakdowns, TOTAL_X, TOTAL_Y);
+    const locala = "en-GB"
     const currency = "GBP"
+
+    function round(number: number, precision: number) {
+        const level = 10 ** precision;
+        return Math.round((number + Number.EPSILON) * level) / level;
+    }
+
+    function displayAmount(amount: number) {
+        let formatter = new Intl.NumberFormat(locala, {
+            style: 'currency',
+            currency: currency,
+        });
+
+        return formatter.format(amount);
+    }
     const totalBudget = dataProcessor.totalBudget;
     const totalAmount = dataProcessor.totalAmount;
     const highestY = Math.max(TOTAL_Y, dataProcessor.getHighestY());
@@ -69,6 +63,7 @@ const BudgetChart: React.FC<BudgetChartProps> = (props) => {
     const budgetData: BudgetData[] = dataProcessor.getBudgetData();
 
     const chartRender = new ChartRenders(budgetNames, totalBudget, TOTAL_X, TOTAL_Y, lowestY);
+
 
     // DATASETS
     const budgetDataSet = [
@@ -129,7 +124,7 @@ const BudgetChart: React.FC<BudgetChartProps> = (props) => {
         return {
             name: `${monthLabels[index]}`,
             id: `${monthLabels[index]}`,
-            type: 'custom',// @ts-ignore
+            type: 'custom',
             renderItem: chartRender.renderItemFunc,
             encode: {
                 itemId: 'month',
@@ -178,7 +173,7 @@ const BudgetChart: React.FC<BudgetChartProps> = (props) => {
         return {
             name: `${monthLabels[index]}`,
             id: `${monthLabels[index]}`,
-            type: 'custom',// @ts-ignore
+            type: 'custom',
             renderItem: chartRender.renderMonthlyBlock,
             encode: {
                 itemId: 'month',
@@ -351,7 +346,7 @@ const BudgetChart: React.FC<BudgetChartProps> = (props) => {
     }
 
 
-    let series = getSeries(props.showAggregate, props.showCurrentLine as boolean);
+    let series = getSeries(config.showAggregate, config.showCurrentLine as boolean);
     const option = {
         title: {
             show: false,
@@ -379,8 +374,8 @@ const BudgetChart: React.FC<BudgetChartProps> = (props) => {
             show: true,
             splitNumber: 5,
             axisLabel: {
-                show: true,// @ts-ignore
-                formatter: function (value, index) {
+                show: true,
+                formatter: function (value:any, index:any) {
                     return `${value}%`;
                 },
             },
@@ -433,22 +428,18 @@ const BudgetChart: React.FC<BudgetChartProps> = (props) => {
     };
 
     useEffect(() => {
-        console.log("props.showAggregate Changed", props.showAggregate, props.showCurrentLine);
-        // @ts-ignore
-        let ins = instance.current.getEchartsInstance();
-        let series = getSeries(props.showAggregate, props.showCurrentLine as boolean);
+        let ins = instance.current?.getEchartsInstance();
+        if(!ins) return;
+        let series = getSeries(config.showAggregate, config.showCurrentLine as boolean);
         ins.setOption({
             series: series.flat(),
         }, {
             replaceMerge: ['series'],
         });
-    }, [props.showAggregate, props.showCurrentLine])
+    }, [config.showAggregate, config.showCurrentLine])
 
     return <ReactECharts ref={instance} option={option} style={{ height: "100%" }} />;
 
 }
 
-BudgetChart.defaultProps = {
-    showCurrentLine: false,
-};
-export default BudgetChart;
+

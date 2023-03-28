@@ -1,35 +1,19 @@
 {
-  "name": "budget-view-chart",
+  "name": "demo",
   "version": "0.1.0",
-  "description": "A react Chart component specialising in display budget for personal finance.",
-  "keywords": [
-    "chart",
-    "widget",
-    "echarts"
-  ],
-  "author": "iLeoDo",
-  "license": "Apache-2.0",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ileodo/budget-view-chart.git"
-  },
-  "bugs": {
-    "url": "https://github.com/ileodo/budget-view-chart/issues"
-  },
-  "homepage": "https://github.com/ileodo/budget-view-chart#readme",
+  "private": true,
   "dependencies": {
-    "echarts": "^5.2.2",
-    "echarts-for-react": "^3.0.2",
+    "axios": "^0.25.0",
+    "bootstrap": "^5.1.3",
+    "bootstrap-icons": "^1.8.1",
+    "budget-view-chart": "link:..",
+    "fs": "0.0.1-security",
+    "react": "^17.0.2",
     "react-bootstrap": "^2.1.2",
     "react-dom": "^17.0.2",
     "react-router-dom": "^6.2.1",
     "react-scripts": "5.0.0",
     "web-vitals": "^2.1.3"
-  },
-  "peerDependencies": {
-    "react": "^17.0.2"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^5.16.1",
@@ -40,16 +24,16 @@
     "@types/react": "^17.0.38",
     "@types/react-dom": "^17.0.11",
     "jest": "^27.4.7",
+    "nodemon": "^2.0.15",
     "ts-jest": "^27.1.3",
     "ts-node": "^10.4.0",
-    "tsc-watch": "^6.0.0",
     "typescript": "^4.5.5"
   },
   "scripts": {
-    "build": "tsc",
-    "watch": "tsc-watch",
-    "prepublish": "npm run build",
-    "test": "jest"
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
   },
   "eslintConfig": {
     "extends": [
