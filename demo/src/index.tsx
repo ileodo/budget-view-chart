@@ -13,7 +13,7 @@ ReactDOM.render(
   <React.StrictMode>
     <BrowserRouter basename={process.env.PUBLIC_URL || "/"}>
       <Routes>
-        <Route path="/" element={<App demo={true} />} />
+        <Route path="/" element={<App />} />
       </Routes>
     </BrowserRouter>
   </React.StrictMode>,
