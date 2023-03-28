@@ -1,4 +1,4 @@
-
+d
 # This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
 
@@ -40,12 +40,20 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
-      - name: Run install
+      - name: install budget-view-chart
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: install
+      - name: build budget-view-chart
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: build
+      - name: install demo
         uses: borales/actions-yarn@v4
         with:
           cmd: install
           dir: ./demo
-      - name: Build
+      - name: build demo
         env:
           PUBLIC_URL: https://ileodo.github.io/budget-view-chart/
         uses: borales/actions-yarn@v4
