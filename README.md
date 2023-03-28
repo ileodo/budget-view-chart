@@ -1,207 +1,38 @@
 # budget-view-chart
 
 A react Chart component specialising in display budget for personal finance.
+> This component is built based on [echarts](https://echarts.apache.org/en/index.html).
 
-[Demo](https://ileodo.github.io/budget-view-chart/)
 
-Example:
-![](./examples/example.png)
+[Demo/Playground](https://ileodo.github.io/budget-view-chart/)
 
-Example Data:
-```json
-[
-  {
-    "name": "Mortgage",
-    "description": "Mortgage",
-    "monthlyBudget": 1000,
-    "monthlyAmount": [
-      800,
-      950,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
-    ]
-  },
-  {
-    "name": "Groceries & Eating Out",
-    "description": "Groceries",
-    "monthlyBudget": 500,
-    "monthlyAmount": [
-      153.35,
-      350.36,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
-    ]
-  },
-  {
-    "name": "Shopping",
-    "description": "Shopping",
-    "monthlyBudget": 500,
-    "monthlyAmount": [
-      300,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
-    ]
-  },
-  {
-    "name": "Other",
-    "description": "Experiences",
-    "monthlyBudget": 300,
-    "monthlyAmount": [
-      300,
-      300,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
-    ]
-  },
-  {
-    "name": "Transport",
-    "description": [
-      "Car",
-      "Transport"
-    ],
-    "monthlyBudget": 200,
-    "monthlyAmount": [
-      36.88,
-      123,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
-    ]
-  },
-  {
-    "name": "Bills",
-    "description": "Bills",
-    "monthlyBudget": 300,
-    "monthlyAmount": [
-      250,
-      460,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
-    ]
-  },
-  {
-    "name": "Household",
-    "description": "Household",
-    "monthlyBudget": 100,
-    "monthlyAmount": [
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
-    ]
-  },
-  {
-    "name": "Saving",
-    "description": "Savings",
-    "monthlyBudget": 400,
-    "monthlyAmount": [
-      350,
-      400,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
-    ]
-  },
-  {
-    "name": "Investment",
-    "description": "Investment",
-    "monthlyBudget": 300,
-    "monthlyAmount": [
-      300,
-      300,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
-    ]
-  },
-  {
-    "name": "Yearly Bill",
-    "description": "Yearly Bill",
-    "monthlyBudget": 150,
-    "monthlyAmount": [
-      700,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
-    ]
-  }
-]
+<p style="text-align:center;"><img src="./examples/example.png" width="800" alt="example"/></p>
+
+# Get Started
+
+```bash
+npm install budget-view-chart
 ```
+
+```react
+<BudgetChart config={{
+                        year: 2023,
+                        month: 10,
+                        showCurrentLine: true,
+                        showAggregate: false,
+                        locale: "en-GB",
+                        currency: "GBP"
+                    }} value={dataset}/>
+
+```
+Example `dataset` can be find in [demo/src/data/](demo/src/data/)
+
+
+# Contribution
+
+All contributions are welcomed, especially the following aspects:
+
+- Standardise the repo
+- Standardise the build/test/linting process
+- Support custom styling
+- Performance improvements

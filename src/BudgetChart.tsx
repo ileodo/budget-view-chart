@@ -11,14 +11,14 @@ const TOTAL_X = 100;
 const TOTAL_Y = 100;
 
 
-// HELPERS:
-
-
+// TYPES:
 export interface BudgetChartConfig {
     year: number,
     month: number,
     showCurrentLine?: boolean,
     showAggregate: boolean,
+    locale: string,
+    currency: string
 }
 
 export interface BudgetChartProps {
@@ -37,8 +37,7 @@ export const BudgetChart: React.FC<BudgetChartProps> = (props) => {
     const month: number = config.month;
 
     const dataProcessor = new DataProcessor(budgetBreakdowns, TOTAL_X, TOTAL_Y);
-    const locala = "en-GB"
-    const currency = "GBP"
+
 
     function round(number: number, precision: number) {
         const level = 10 ** precision;
@@ -46,9 +45,9 @@ export const BudgetChart: React.FC<BudgetChartProps> = (props) => {
     }
 
     function displayAmount(amount: number) {
-        let formatter = new Intl.NumberFormat(locala, {
+        let formatter = new Intl.NumberFormat(config.locale, {
             style: 'currency',
-            currency: currency,
+            currency: config.currency,
         });
 
         return formatter.format(amount);

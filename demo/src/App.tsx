@@ -28,9 +28,11 @@ function loadData(name: string): BudgetRecord[] {
 
 const defaultConfig: BudgetChartConfig = {
     year: 2023,
-    month: 10,
+    month: 1,
     showCurrentLine: true,
     showAggregate: false,
+    locale: "en-GB",
+    currency: "GBP"
 }
 
 export const App: React.FC = (props) => {
@@ -137,9 +139,8 @@ export const App: React.FC = (props) => {
                 </Row>
             </Container>
             <footer className="pt-3 mt-4 text-muted border-top">
-                iLeoDo  &copy; 2022
+                iLeoDo  &copy; 2023
             </footer>
-            {/* </main>   */}
         </Container>
     );
 }
