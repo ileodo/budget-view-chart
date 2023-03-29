@@ -4,7 +4,7 @@
 
 ![npm type definitions](https://img.shields.io/npm/types/budget-view-chart)
 ![NPM](https://img.shields.io/npm/l/budget-view-chart)
-![npm](https://img.shields.io/npm/v/budget-view-chart)
+[![npm](https://img.shields.io/npm/v/budget-view-chart)](https://www.npmjs.com/package/budget-view-chart)
 ![npm](https://img.shields.io/npm/dw/budget-view-chart)
 
 A react Chart component specialising in display budget for personal finance.
