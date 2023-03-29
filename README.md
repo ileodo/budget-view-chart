@@ -2,10 +2,14 @@
 
 [![Deploy Github Page](https://github.com/ileodo/budget-view-chart/actions/workflows/static.yml/badge.svg)](https://github.com/ileodo/budget-view-chart/actions/workflows/static.yml)
 
+
 ![npm type definitions](https://img.shields.io/npm/types/budget-view-chart)
 ![NPM](https://img.shields.io/npm/l/budget-view-chart)
 [![npm](https://img.shields.io/npm/v/budget-view-chart)](https://www.npmjs.com/package/budget-view-chart)
 ![npm](https://img.shields.io/npm/dw/budget-view-chart)
+
+
+<a href="https://www.buymeacoffee.com/Ileodo" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-blue.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
 
 A react Chart component specialising in display budget for personal finance.
 
