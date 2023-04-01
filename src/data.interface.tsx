@@ -1,9 +1,9 @@
 
 export interface BudgetRecord {
-    name: string;
-    description: string;
-    monthlyBudget: number;
-    monthlyAmount: number[];
+  name: string
+  description: string
+  monthlyBudget: number
+  monthlyAmount: number[]
 }
 
 /**

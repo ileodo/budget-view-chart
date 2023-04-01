@@ -1,6 +1,5 @@
 // import 'reflect-metadata';
-import {BudgetChart,BudgetChartConfig} from "./BudgetChart";
-import {BudgetRecord} from "./data.interface";
+import { BudgetChart, type BudgetChartConfig } from './BudgetChart'
+import { type BudgetRecord } from './data.interface'
 
-
-export {BudgetChart, BudgetRecord, BudgetChartConfig}
+export { BudgetChart, type BudgetRecord, type BudgetChartConfig }
