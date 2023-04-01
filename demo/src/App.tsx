@@ -28,8 +28,7 @@ function loadData(name: string): BudgetRecord[] {
 
 const defaultConfig: BudgetChartConfig = {
     year: 2023,
-    month: 1,
-    showCurrentLine: true,
+    showMonthEndLine: 3,
     showAggregate: false,
     locale: "en-GB",
     currency: "GBP"
