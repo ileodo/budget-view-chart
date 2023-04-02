@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/restrict-plus-operands */
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { monthLabels } from './Constants'
 
 const colorPalettes = [
@@ -17,6 +16,8 @@ const colorPalettes = [
   '#d1495b',
   '#00798c'
 ]
+type RenderItem = any
+type RenderGroupItem = any
 
 export class ChartRenders {
   budgetNames: string[]
@@ -32,7 +33,7 @@ export class ChartRenders {
     this.lowestY = lowestY
   }
 
-  renderBudgetLabel = (params: any, api: any) => {
+  renderBudgetLabel = (params: any, api: any): RenderGroupItem => {
     return {
       type: 'group',
       children: [
@@ -45,8 +46,7 @@ export class ChartRenders {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-  renderBudgetText = (params: any, api: any) => {
+  private readonly renderBudgetText = (params: any, api: any): RenderItem => {
     const start = api.coord([api.value('xStart'), 0])
     const size = api.size([api.value('xLength'), 0])
     return {
@@ -70,7 +70,8 @@ export class ChartRenders {
     }
   }
 
-  renderBudgetBlock = (params: any, api: any) => {
+  private readonly renderBudgetBlock = (params: any, api: any): RenderItem => {
+    // TODO: Allow customise colorPalettes
     const fill = colorPalettes[this.budgetNames.indexOf(api.value('name')) % colorPalettes.length]
     const yValue = api.value('yLength')
     const y = yValue < 0 ? api.value('yStart') : yValue + api.value('yStart')
@@ -108,7 +109,7 @@ export class ChartRenders {
     }
   }
 
-  renderMonthLegend = (params: any, api: any) => {
+  private readonly renderMonthLegend = (params: any, api: any): RenderItem => {
     const month = api.value('month')
     const boxWidthPx = 30
     const boxHeightVal = this.TOTAL_Y / 12
@@ -137,7 +138,7 @@ export class ChartRenders {
     }
   }
 
-  renderBlock = (params: any, api: any) => {
+  private readonly renderBreakdownBlock = (params: any, api: any): RenderItem => {
     const fill = colorPalettes[this.budgetNames.indexOf(api.value('name')) % colorPalettes.length]
     const yValue = api.value('yLength')
     const y = yValue < 0 ? api.value('yStart') : yValue + api.value('yStart')
@@ -175,7 +176,7 @@ export class ChartRenders {
     }
   }
 
-  renderMonthlyBlockHelper = (param: any, api: any) => {
+  private readonly renderMonthlyAggregateBlock = (param: any, api: any): RenderItem => {
     const fill = '#321'
     const month = api.value('month')
     const yValue = api.value('yLength')
@@ -217,27 +218,28 @@ export class ChartRenders {
     }
   }
 
-  renderMonthlyBlock = (param: any, api: any) => {
-    if (api.value('name') === '') {
+  renderMonthlyAggregate = (param: any, api: any): RenderGroupItem => {
+    if (api.value('type') === 'aggregate') {
       return {
         type: 'group',
         children: [
           this.renderMonthLegend(param, api),
-          this.renderMonthlyBlockHelper(param, api)
-        ]
+          this.renderMonthlyAggregateBlock(param, api)
+        ].filter(element => { return element !== undefined && element !== null })
       }
     }
   }
 
-  renderItemFunc = (param: any, api: any) => {
-    if (api.value('name') === '') {
+  renderMonthlyBreakdown = (param: any, api: any): RenderItem => {
+    if (api.value('type') === 'aggregate') {
       return this.renderMonthLegend(param, api)
     }
 
-    return this.renderBlock(param, api)
+    return this.renderBreakdownBlock(param, api)
   }
 
-  renderLine = (param: any, api: any) => {
+  // TODO: use this renderLine in Chart
+  renderLine = (param: any, api: any): any => {
     const h = api.value(0) / this.totalBudget * this.TOTAL_Y
     const start = api.coord([0, h])
     const end = api.coord([this.TOTAL_X, h])

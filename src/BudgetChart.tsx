@@ -2,7 +2,7 @@
 import React, { useRef, useEffect } from 'react'
 import ReactECharts from 'echarts-for-react'
 import { type BudgetRecord } from './data.interface'
-import { DataProcessor, type BudgetData, type ChartData } from './DataProcessor'
+import { DataProcessor, BudgetData, ChartData } from './DataProcessor'
 import { ChartRenders } from './ChartRenders'
 import { monthLabels } from './Constants'
 
@@ -10,11 +10,12 @@ import { monthLabels } from './Constants'
 const TOTAL_X = 100
 const TOTAL_Y = 100
 
+const MONTH_PER_YEAR = 12
+
 // TYPES:
 export interface BudgetChartConfig {
   year: number
-  month: number
-  showCurrentLine?: boolean
+  showMonthEndLine: number | null
   showAggregate: boolean
   locale: string
   currency: string
@@ -25,13 +26,13 @@ export interface BudgetChartProps {
   value: BudgetRecord[]
 }
 
+type Series = Record<string, any>
+
 export const BudgetChart: React.FC<BudgetChartProps> = (props) => {
   const instance = useRef<ReactECharts>(null)
 
   const config: BudgetChartConfig = props.config
   const budgetBreakdowns: BudgetRecord[] = props.value
-
-  const month: number = config.month
 
   const dataProcessor = new DataProcessor(budgetBreakdowns, TOTAL_X, TOTAL_Y)
 
@@ -48,6 +49,16 @@ export const BudgetChart: React.FC<BudgetChartProps> = (props) => {
 
     return formatter.format(amount)
   }
+
+  /**
+   * Get label for a given month
+   * @param {number} month in [0,11]
+   * @returns {string}
+   */
+  function getMonthLabel (month: number): string {
+    return monthLabels[month]
+  }
+
   const totalBudget = dataProcessor.totalBudget
   const totalAmount = dataProcessor.totalAmount
   const highestY = Math.max(TOTAL_Y, dataProcessor.getHighestY())
@@ -59,67 +70,69 @@ export const BudgetChart: React.FC<BudgetChartProps> = (props) => {
 
   const chartRender = new ChartRenders(budgetNames, totalBudget, TOTAL_X, TOTAL_Y, lowestY)
 
-  // DATASETS
+  /* DATASETS */
+  // Index 0: Budget
   const budgetDataSet = [
     {
-      id: 24,
-      dimensions: [
-        { name: 'name', type: 'ordinal' },
-        { name: 'description', type: 'ordinal' },
-        { name: 'monthlyBudget', type: 'float' },
-        { name: 'amount', type: 'float' },
-        { name: 'xStart', type: 'float' },
-        { name: 'xLength', type: 'float' },
-        { name: 'yStart', type: 'float' },
-        { name: 'yLength', type: 'float' }
-      ],
+      id: 'budgets',
+      dimensions: BudgetData.EChartsDataSetDimensions,
       source: budgetData
     }
   ]
-  const chartDataGroupByMonth: ChartData[][] = dataProcessor.getMonthlyAggregatedChartData()
+  const _chartDataGroupByMonth: ChartData[][] = dataProcessor.getMonthlyAggregatedChartData()
 
-  const spendingDataSet = chartDataGroupByMonth.map((element: any, index: number) => {
+  // Index [1,12]: Breakdown month 1-12
+  const spendingBreakdownDataSet = _chartDataGroupByMonth.map((element: any, index: number) => {
     return {
-      id: `breakdown-month-${index}`, // [0,11]
-      dimensions: [
-        { name: 'name', type: 'ordinal' },
-        { name: 'description', type: 'ordinal' },
-        { name: 'monthlyBudget', type: 'float' },
-        { name: 'xStart', type: 'float' },
-        { name: 'xLength', type: 'float' },
-        { name: 'month', type: 'ordinal' },
-        { name: 'amount', type: 'float' },
-        { name: 'yStart', type: 'float' },
-        { name: 'yLength', type: 'float' }
-      ],
+      id: `spending-breakdown-month-${index}`, // [0,11]
+      dimensions: ChartData.EChartsDataSetDimensions,
       source: element
     }
   })
 
-  const spendingAggregateDataSet = chartDataGroupByMonth.map((element: any, index: number) => {
+  // Index [13,24]: Aggregate month 1-12
+  const spendingAggregateDataSet = _chartDataGroupByMonth.map((element: ChartData[], index: number) => {
     return {
-      id: `aggregate-month-${index}`, // [0,11]
-      dimensions: [
-        { name: 'name', type: 'ordinal' },
-        { name: 'description', type: 'ordinal' },
-        { name: 'monthlyBudget', type: 'float' },
-        { name: 'xStart', type: 'float' },
-        { name: 'xLength', type: 'float' },
-        { name: 'month', type: 'ordinal' },
-        { name: 'amount', type: 'float' },
-        { name: 'yStart', type: 'float' },
-        { name: 'yLength', type: 'float' }
-      ],
-      source: element.filter((element: any) => element.name === '')
+      id: `spending-aggregate-month-${index}`, // [0,11]
+      dimensions: ChartData.EChartsDataSetDimensions,
+      source: element.filter((element: ChartData) => element.type === 'aggregate')
     }
   })
 
-  const seriesData = spendingDataSet.map((element: any, index: number) => {
+  /* Series */
+
+  // DataSetIndex 0: Budget
+  const seriesBudgetLabels: Series = {
+    type: 'custom',
+    name: 'budgetLabels',
+    id: 'budgetLabels',
+    renderItem: chartRender.renderBudgetLabel,
+    encode: {
+      x: ['xStart', 'xLength'],
+      y: ['yStart', 'yLength'],
+      tooltip: ['name'],
+      itemName: ['name']
+    },
+    tooltip: {
+      formatter: function (params: { value: BudgetData }, ticket: string, callback: any) {
+        return BudgetData.getEChartsTooltipFormatter(params.value, displayAmount)
+      },
+      textStyle: {
+        align: 'left'
+      }
+    },
+    datasetIndex: 0,
+    zLevel: 10,
+    z: 10
+  }
+
+  // DataSetIndex [1,12]: Breakdown month 1-12
+  const seriesBreakdown: Series[] = spendingBreakdownDataSet.map((element: any, index: number) => {
     return {
-      name: `${monthLabels[index]}`,
-      id: `${monthLabels[index]}`,
+      name: `breakdown-month-${index}`,
+      id: `${index}`,
       type: 'custom',
-      renderItem: chartRender.renderItemFunc,
+      renderItem: chartRender.renderMonthlyBreakdown,
       encode: {
         itemId: 'month',
         x: ['xStart', 'xLength'],
@@ -129,28 +142,14 @@ export const BudgetChart: React.FC<BudgetChartProps> = (props) => {
         itemGroupId: 'month'
       },
       tooltip: {
-        formatter: function (params: any, ticket: string, callback: any) {
-          if (params.value.name === '') {
-            return `
-                <b>${monthLabels[params.value.month]}</b>  <hr/>
-                <div style="display: block">Monthly Budget: <b style="float: right; margin-left:10px">${displayAmount(params.value.monthlyBudget)}</b></div>
-                <div style="display: block">Monthly Amount: <b style="float: right; margin-left:10px">${displayAmount(params.value.amount)}</b></div>
-            `
-          } else {
-            const name: string = params.value.name
-            return `
-                <b>${name}</b> <br/>
-                <b>${monthLabels[params.value.month]}</b> <hr/>
-                <div style="display: block">Monthly Budget: <b style="float: right; margin-left:10px">${displayAmount(params.value.monthlyBudget)}</b></div>
-                <div style="display: block">Monthly Amount: <b style="float: right; margin-left:10px">${displayAmount(params.value.amount)}</b></div>
-            `
-          }
+        formatter: function (params: { value: ChartData }, ticket: string, callback: any) {
+          return ChartData.getEChartsTooltipFormatter(params.value, displayAmount, getMonthLabel)
         },
         textStyle: {
           align: 'left'
         }
       },
-      datasetIndex: index,
+      datasetIndex: index + 1,
       zLevel: 20,
       z: 20,
       universalTransition: {
@@ -163,12 +162,13 @@ export const BudgetChart: React.FC<BudgetChartProps> = (props) => {
     }
   })
 
-  const seriesTotalBox = spendingAggregateDataSet.map((element: any, index: number) => {
+  // DataSetIndex [13,24]: Aggregate month 13-24
+  const seriesAggregate: Series[] = spendingAggregateDataSet.map((element: any, index: number) => {
     return {
-      name: `${monthLabels[index]}`,
-      id: `${monthLabels[index]}`,
+      name: `aggregate-month-${index}`,
+      id: `${index}`,
       type: 'custom',
-      renderItem: chartRender.renderMonthlyBlock,
+      renderItem: chartRender.renderMonthlyAggregate,
       encode: {
         itemId: 'month',
         x: ['xStart', 'xLength'],
@@ -178,20 +178,14 @@ export const BudgetChart: React.FC<BudgetChartProps> = (props) => {
         itemGroupId: 'month'
       },
       tooltip: {
-        formatter: function (params: any, ticket: string, callback: any) {
-          if (params.value.name === '') {
-            return `
-                <b>${monthLabels[params.value.month]}</b>  <hr/>
-                <div style="display: block">Monthly Budget: <b style="float: right; margin-left:10px">${displayAmount(params.value.monthlyBudget)}</b></div>
-                <div style="display: block">Monthly Amount: <b style="float: right; margin-left:10px">${displayAmount(params.value.amount)}</b></div>
-            `
-          }
+        formatter: function (params: { value: ChartData }, ticket: string, callback: any) {
+          return ChartData.getEChartsTooltipFormatter(params.value, displayAmount, getMonthLabel)
         },
         textStyle: {
           align: 'left'
         }
       },
-      datasetIndex: index + 12,
+      datasetIndex: index + MONTH_PER_YEAR + 1,
       zLevel: 30,
       z: 30,
       universalTransition: {
@@ -205,7 +199,7 @@ export const BudgetChart: React.FC<BudgetChartProps> = (props) => {
   })
 
   // Series: Total
-  const seriesTotal = [{
+  const seriesTotal: Series = {
     type: 'custom',
     name: 'total',
     id: 'total',
@@ -245,98 +239,67 @@ export const BudgetChart: React.FC<BudgetChartProps> = (props) => {
       }
     },
     data: [[totalBudget, totalAmount]]
-  }]
+  }
 
   // Series: Total
-  const seriesCurrent = [{
-    type: 'custom',
-    name: 'current',
-    id: 'current',
-    renderItem: function (param: any, api: any) {
-      const h = api.value(0) / totalBudget * TOTAL_Y
-      const start = api.coord([0, h])
-      const end = api.coord([TOTAL_X, h])
-      return {
-        type: 'line',
-        transition: ['shape'],
-        shape: {
-          x1: start[0],
-          x2: end[0],
-          y1: start[1],
-          y2: end[1]
-        },
-        style: {
-          fill: null,
-          stroke: '#e71',
-          lineWidth: 2
+  const seriesCurrent = (currentMonth: number): Series => {
+    return {
+      type: 'custom',
+      name: 'current',
+      id: 'current',
+      renderItem: function (param: any, api: any) {
+        const h = api.value(0) / totalBudget * TOTAL_Y
+        const start = api.coord([0, h])
+        const end = api.coord([TOTAL_X, h])
+        return {
+          type: 'line',
+          transition: ['shape'],
+          shape: {
+            x1: start[0],
+            x2: end[0],
+            y1: start[1],
+            y2: end[1]
+          },
+          style: {
+            fill: null,
+            stroke: '#e71',
+            lineWidth: 2
+          }
         }
-      }
-    },
-    zLevel: 40,
-    z: 40,
-    tooltip: {
-      formatter: function (params: any, ticket: string, callback: any) {
-        return `
+      },
+      zLevel: 40,
+      z: 40,
+      tooltip: {
+        formatter: function (params: any, ticket: string, callback: any) {
+          return `
                             <b>Current</b> <hr/>
                             <div style="display: block">Current Budget: <b style="float: right; margin-left:10px">${displayAmount(params.value[0])}</b></div>
                             <div style="display: block">Current Amount: <b style="float: right; margin-left:10px">${displayAmount(params.value[1])}</b></div>
                             <div style="display: block">Left to Spend: <b style="float: right; margin-left:10px">${displayAmount(params.value[0] - params.value[1])}</b></div>
                         `
+        },
+        textStyle: {
+          align: 'left'
+        }
       },
-      textStyle: {
-        align: 'left'
-      }
-    },
-    data: [[totalBudget / 12 * (month + 1), totalAmount]]
-  }]
-
-  const seriesBudgetLabels = [{
-    type: 'custom',
-    name: 'budgetLabels',
-    id: 'budgetLabels',
-    renderItem: chartRender.renderBudgetLabel,
-    encode: {
-      x: ['xStart', 'xLength'],
-      y: ['amount'],
-      tooltip: ['name'],
-      itemName: ['name']
-    },
-    tooltip: {
-      formatter: function (params: any, ticket: string, callback: any) {
-        const name: string = params.value.name
-        const description: string = params.value.description
-        return `
-            <b>${name}</b> 
-            <b>${description}</b> 
-            <hr/>
-            <div style="display: block">Annual Budget: <b style="float: right; margin-left:10px">${displayAmount(params.value.monthlyBudget * 12)}</b></div>
-            <div style="display: block">Annual Amount: <b style="float: right; margin-left:10px">${displayAmount(params.value.amount)}</b></div>
-            <div style="display: block">Left to Spend: <b style="float: right; margin-left:10px">${displayAmount(params.value.monthlyBudget * 12 - params.value.amount)}</b></div>
-        `
-      },
-      textStyle: {
-        align: 'left'
-      }
-    },
-    datasetIndex: 24,
-    zLevel: 10,
-    z: 10
-  }]
-
-  function getSeries (aggregate: boolean, current: boolean): any[] {
-    const series: any[] = [seriesBudgetLabels, seriesTotal]
-    if (aggregate) {
-      series.push(seriesTotalBox)
-    } else {
-      series.push(seriesData)
+      data: [[totalBudget / MONTH_PER_YEAR * (currentMonth + 1), totalAmount]]
     }
-    if (current) {
-      series.push(seriesCurrent)
-    }
-    return series
   }
 
-  const series = getSeries(config.showAggregate, config.showCurrentLine as boolean)
+  function getSeries (aggregate: boolean, current: number | null): Series[] {
+    const series: Series[][] = [[seriesBudgetLabels], [seriesTotal]]
+    if (aggregate) {
+      series.push(seriesAggregate)
+    } else {
+      series.push(seriesBreakdown)
+    }
+    if (current !== null && current >= 0 && current < MONTH_PER_YEAR) {
+      series.push([seriesCurrent(current)])
+    }
+    return series.flat()
+  }
+
+  const series = getSeries(config.showAggregate, config.showMonthEndLine)
   const option = {
     title: {
       show: false
@@ -357,7 +320,7 @@ export const BudgetChart: React.FC<BudgetChartProps> = (props) => {
     tooltip: {
       trigger: 'item'
     },
-    dataset: [spendingDataSet, spendingAggregateDataSet, budgetDataSet].flat(),
+    dataset: [budgetDataSet, spendingBreakdownDataSet, spendingAggregateDataSet].flat(),
     xAxis: {
       min: 0,
       max: TOTAL_X,
@@ -378,8 +341,8 @@ export const BudgetChart: React.FC<BudgetChartProps> = (props) => {
       {
         min: Math.floor(lowestY / 25) * 25,
         max: Math.ceil(highestY / 25) * 25,
-        interval: TOTAL_Y / 12,
-        splitNumber: 12,
+        interval: TOTAL_Y / MONTH_PER_YEAR,
+        splitNumber: MONTH_PER_YEAR,
         position: 'left',
         axisLabel: {
           show: false
@@ -394,8 +357,8 @@ export const BudgetChart: React.FC<BudgetChartProps> = (props) => {
       {
         min: Math.floor(lowestY / 25) * 25,
         max: Math.ceil(highestY / 25) * 25,
-        interval: TOTAL_Y / 12,
-        splitNumber: 12,
+        interval: TOTAL_Y / MONTH_PER_YEAR,
+        splitNumber: MONTH_PER_YEAR,
         position: 'right',
         axisLabel: {
           show: true,
@@ -415,19 +378,19 @@ export const BudgetChart: React.FC<BudgetChartProps> = (props) => {
           inside: false
         }
       }],
-    series: series.flat()
+    series
   }
 
   useEffect(() => {
     const ins = instance.current?.getEchartsInstance()
     if (ins == null) return
-    const series = getSeries(config.showAggregate, config.showCurrentLine as boolean)
+    const series = getSeries(config.showAggregate, config.showMonthEndLine)
     ins.setOption({
       series: series.flat()
     }, {
       replaceMerge: ['series']
     })
-  }, [config.showAggregate, config.showCurrentLine])
+  }, [config.showAggregate, config.showMonthEndLine])
 
   return <ReactECharts ref={instance} option={option} style={{ height: '100%' }} />
 }
