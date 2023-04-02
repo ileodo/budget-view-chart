@@ -1,42 +1,50 @@
 /* eslint-disable @typescript-eslint/restrict-plus-operands */
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
-import { MONTH_PER_YEAR } from './Constants'
+import { defaultColorPalettes, MONTH_PER_YEAR, monthLabels } from './Constants'
 import { type BudgetData, type ChartData } from './DataProcessor'
 
-const colorPalettes = [
-  '#edae49',
-  '#d1495b',
-  '#00798c',
-  '#30638e',
-  '#003d5b',
-  '#408e9a',
-  '#80ded9',
-  '#aeecef',
-  '#bdadea',
-  '#edae49',
-  '#d1495b',
-  '#00798c'
-]
-type RenderItem = any
-type RenderGroupItem = any
+type RenderItem = Record<string, any>
+type RenderGroupItem = Record<string, any>
 
 export class ChartRenders {
   budgetNames: string[]
   totalBudget: number
-  TOTAL_X: number
-  TOTAL_Y: number
+  fullWidth: number
+  fullHeight: number
   lowestY: number
 
   numberFormatter: (number: number) => string
   monthLabelGetter: (month: number) => string
-  constructor (budgetNames: string[], totalBudget: number, TOTAL_X: number, TOTAL_Y: number, lowestY: number, numberFormatter: (number: number) => string, monthLabelGetter: (month: number) => string) {
+  budgetColorGetter: (budgetName: string) => string
+
+  constructor (
+    budgetNames: string[],
+    totalBudget: number,
+    fullWidth: number,
+    fullHeight: number,
+    lowestY: number,
+    locale: string,
+    currency: string
+  ) {
     this.budgetNames = budgetNames
     this.totalBudget = totalBudget
-    this.TOTAL_X = TOTAL_X
-    this.TOTAL_Y = TOTAL_Y
+    this.fullWidth = fullWidth
+    this.fullHeight = fullHeight
     this.lowestY = lowestY
-    this.numberFormatter = numberFormatter
-    this.monthLabelGetter = monthLabelGetter
+    this.numberFormatter = (amount: number): string => {
+      const formatter = new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency
+      })
+
+      return formatter.format(amount)
+    }
+    this.monthLabelGetter = (month: number): string => {
+      return monthLabels[month]
+    }
+    this.budgetColorGetter = (budgetName: string): string => {
+      return defaultColorPalettes[this.budgetNames.indexOf(budgetName) % defaultColorPalettes.length]
+    }
   }
 
   renderBudgetLabel = (params: any, api: any): RenderGroupItem => {
@@ -77,8 +85,7 @@ export class ChartRenders {
   }
 
   private readonly renderBudgetBlock = (params: any, api: any): RenderItem => {
-    // TODO: Allow customise colorPalettes
-    const fill = colorPalettes[this.budgetNames.indexOf(api.value('name')) % colorPalettes.length]
+    const fill = this.budgetColorGetter(api.value('name'))
     const yValue = api.value('yLength')
     const y = yValue < 0 ? api.value('yStart') : yValue + api.value('yStart')
     const start = api.coord([api.value('xStart'), y])
@@ -118,7 +125,7 @@ export class ChartRenders {
   private readonly renderMonthLegend = (params: any, api: any): RenderItem => {
     const month = api.value('month')
     const boxWidthPx = 30
-    const boxHeightVal = this.TOTAL_Y / MONTH_PER_YEAR
+    const boxHeightVal = this.fullHeight / MONTH_PER_YEAR
 
     const monthSize = api.size([0, boxHeightVal])
     const monthStart = api.coord([0, boxHeightVal * (month + 1)])
@@ -132,12 +139,30 @@ export class ChartRenders {
         width: boxWidthPx,
         height: monthSize[1]
       },
-      style: { fill: '#444444', textFill: '#c7c7c7', fontWeight: '800', opacity: 0.8, text: `${this.monthLabelGetter(month)}` },
+      style: {
+        fill: '#444444',
+        textFill: '#c7c7c7',
+        fontWeight: '800',
+        opacity: 0.8,
+        text: `${this.monthLabelGetter(month)}`
+      },
       emphasis: {
-        style: { fill: '#444444', textFill: '#c7c7c7', fontWeight: '800', opacity: 1, text: `${this.monthLabelGetter(month)}` }
+        style: {
+          fill: '#444444',
+          textFill: '#c7c7c7',
+          fontWeight: '800',
+          opacity: 1,
+          text: `${this.monthLabelGetter(month)}`
+        }
       },
       blur: {
-        style: { fill: '#444444', textFill: '#ffffff', fontWeight: '800', opacity: 0.8, text: `${this.monthLabelGetter(month)}` }
+        style: {
+          fill: '#444444',
+          textFill: '#ffffff',
+          fontWeight: '800',
+          opacity: 0.8,
+          text: `${this.monthLabelGetter(month)}`
+        }
       },
       focus: 'series',
       morph: false
@@ -145,7 +170,7 @@ export class ChartRenders {
   }
 
   private readonly renderBreakdownBlock = (params: any, api: any): RenderItem => {
-    const fill = colorPalettes[this.budgetNames.indexOf(api.value('name')) % colorPalettes.length]
+    const fill = this.budgetColorGetter(api.value('name'))
     const yValue = api.value('yLength')
     const y = yValue < 0 ? api.value('yStart') : yValue + api.value('yStart')
     const start = api.coord([api.value('xStart'), y])
@@ -182,7 +207,7 @@ export class ChartRenders {
     }
   }
 
-  private readonly renderMonthlyAggregateBlock = (param: any, api: any): RenderItem => {
+  private readonly renderMonthlyAggregateBlock = (param: any, api: any): RenderItem | null => {
     const fill = '#321'
     const month = api.value('month')
     const yValue = api.value('yLength')
@@ -202,7 +227,7 @@ export class ChartRenders {
       }
     }
     if (yValue === 0) {
-      return
+      return null
     }
     return {
       type: 'rect',
@@ -212,28 +237,47 @@ export class ChartRenders {
         width: size[0],
         height: size[1]
       },
-      style: { fill: '#444444', textFill: '#c7c7c7', fontWeight: '800', opacity: 0.8, text: `${this.monthLabelGetter(month)}` },
+      style: {
+        fill: '#444444',
+        textFill: '#c7c7c7',
+        fontWeight: '800',
+        opacity: 0.8,
+        text: `${this.monthLabelGetter(month)}`
+      },
       emphasis: {
-        style: { fill: '#444444', textFill: '#c7c7c7', opacity: 1, text: `${this.monthLabelGetter(month)}` }
+        style: {
+          fill: '#444444',
+          textFill: '#c7c7c7',
+          opacity: 1,
+          text: `${this.monthLabelGetter(month)}`
+        }
       },
       blur: {
-        style: { fill: '#444444', textFill: '#ffffff', opacity: 0.8, text: `${this.monthLabelGetter(month)}` }
+        style: {
+          fill: '#444444',
+          textFill: '#ffffff',
+          opacity: 0.8,
+          text: `${this.monthLabelGetter(month)}`
+        }
       },
       focus: 'self',
       blurScope: 'global'
     }
   }
 
-  renderMonthlyAggregate = (param: any, api: any): RenderGroupItem => {
+  renderMonthlyAggregate = (param: any, api: any): RenderGroupItem | null => {
     if (api.value('type') === 'aggregate') {
       return {
         type: 'group',
         children: [
           this.renderMonthLegend(param, api),
           this.renderMonthlyAggregateBlock(param, api)
-        ].filter(element => { return element !== undefined && element !== null })
+        ].filter(element => {
+          return element !== undefined && element !== null
+        })
       }
     }
+    return null
   }
 
   renderMonthlyBreakdown = (param: any, api: any): RenderItem => {
@@ -246,9 +290,9 @@ export class ChartRenders {
 
   // TODO: use this renderLine in Chart
   renderHorizontalLine = (valueFunction: (api: any) => number, param: any, api: any): any => {
-    const h = valueFunction(api) / this.totalBudget * this.TOTAL_Y
+    const h = valueFunction(api) / this.totalBudget * this.fullHeight
     const start = api.coord([0, h])
-    const end = api.coord([this.TOTAL_X, h])
+    const end = api.coord([this.fullWidth, h])
     return {
       type: 'line',
       transition: ['shape'],
