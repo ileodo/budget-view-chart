@@ -1,4 +1,3 @@
-// import 'reflect-metadata';
 import { BudgetChart, type BudgetChartConfig } from './BudgetChart'
 import { type BudgetRecord } from './data.interface'
 

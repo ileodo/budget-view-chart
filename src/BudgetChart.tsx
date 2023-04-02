@@ -1,14 +1,13 @@
-
 import React, { useRef, useEffect } from 'react'
 import ReactECharts from 'echarts-for-react'
 import { type BudgetRecord } from './data.interface'
 import { DataProcessor, BudgetData, ChartData } from './DataProcessor'
 import { ChartRenders } from './ChartRenders'
-import { monthLabels, MONTH_PER_YEAR } from './Constants'
+import { MONTH_PER_YEAR } from './Constants'
 
 // DEFINE
-const TOTAL_X = 100
-const TOTAL_Y = 100
+const FULL_WIDTH = 100
+const FULL_HEIGHT = 100
 
 // TYPES:
 export interface BudgetChartConfig {
@@ -25,45 +24,26 @@ export interface BudgetChartProps {
 
 type Series = Record<string, any>
 
+function round (number: number, precision: number): number {
+  const level = 10 ** precision
+  return Math.round((number + Number.EPSILON) * level) / level
+}
+
 export const BudgetChart: React.FC<BudgetChartProps> = (props) => {
   const instance = useRef<ReactECharts>(null)
 
   const config: BudgetChartConfig = props.config
   const budgetBreakdowns: BudgetRecord[] = props.value
 
-  const dataProcessor = new DataProcessor(budgetBreakdowns, TOTAL_X, TOTAL_Y)
-
-  function round (number: number, precision: number): number {
-    const level = 10 ** precision
-    return Math.round((number + Number.EPSILON) * level) / level
-  }
-
-  function displayAmount (amount: number): string {
-    const formatter = new Intl.NumberFormat(config.locale, {
-      style: 'currency',
-      currency: config.currency
-    })
-
-    return formatter.format(amount)
-  }
-
-  /**
-   * Get label for a given month
-   * @param {number} month in [0,11]
-   * @returns {string}
-   */
-  function getMonthLabel (month: number): string {
-    return monthLabels[month]
-  }
+  const dataProcessor = new DataProcessor(budgetBreakdowns, FULL_WIDTH, FULL_HEIGHT)
 
   const totalBudget = dataProcessor.totalBudget
   const totalAmount = dataProcessor.totalAmount
-  const highestY = Math.max(TOTAL_Y, dataProcessor.getHighestY())
+  const highestY = Math.max(FULL_HEIGHT, dataProcessor.getHighestY())
   const lowestY = Math.min(0, dataProcessor.getLowestY())
 
   const budgetNames = dataProcessor.budgetNames
-
-  const chartRender = new ChartRenders(budgetNames, totalBudget, TOTAL_X, TOTAL_Y, lowestY, displayAmount, getMonthLabel)
+  const chartRender = new ChartRenders(budgetNames, totalBudget, FULL_WIDTH, FULL_HEIGHT, lowestY, config.locale, config.currency)
 
   /* DATASETS */
   // Index 0: Budget
@@ -264,7 +244,7 @@ export const BudgetChart: React.FC<BudgetChartProps> = (props) => {
     dataset: [budgetDataSet, spendingBreakdownDataSet, spendingAggregateDataSet].flat(),
     xAxis: {
       min: 0,
-      max: TOTAL_X,
+      max: FULL_WIDTH,
       show: true,
       splitNumber: 5,
       axisLabel: {
@@ -282,7 +262,7 @@ export const BudgetChart: React.FC<BudgetChartProps> = (props) => {
       {
         min: Math.floor(lowestY / 25) * 25,
         max: Math.ceil(highestY / 25) * 25,
-        interval: TOTAL_Y / MONTH_PER_YEAR,
+        interval: FULL_HEIGHT / MONTH_PER_YEAR,
         splitNumber: MONTH_PER_YEAR,
         position: 'left',
         axisLabel: {
@@ -298,7 +278,7 @@ export const BudgetChart: React.FC<BudgetChartProps> = (props) => {
       {
         min: Math.floor(lowestY / 25) * 25,
         max: Math.ceil(highestY / 25) * 25,
-        interval: TOTAL_Y / MONTH_PER_YEAR,
+        interval: FULL_HEIGHT / MONTH_PER_YEAR,
         splitNumber: MONTH_PER_YEAR,
         position: 'right',
         axisLabel: {
@@ -333,5 +313,5 @@ export const BudgetChart: React.FC<BudgetChartProps> = (props) => {
     })
   }, [config.showAggregate, config.showMonthEndLine])
 
-  return <ReactECharts ref={instance} option={option} style={{ height: '100%' }} />
+  return <ReactECharts ref={instance} option={option} style={{ height: '100%' }}/>
 }
