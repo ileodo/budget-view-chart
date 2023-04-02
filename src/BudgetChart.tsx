@@ -4,17 +4,14 @@ import ReactECharts from 'echarts-for-react'
 import { type BudgetRecord } from './data.interface'
 import { DataProcessor, BudgetData, ChartData } from './DataProcessor'
 import { ChartRenders } from './ChartRenders'
-import { monthLabels } from './Constants'
+import { monthLabels, MONTH_PER_YEAR } from './Constants'
 
 // DEFINE
 const TOTAL_X = 100
 const TOTAL_Y = 100
 
-const MONTH_PER_YEAR = 12
-
 // TYPES:
 export interface BudgetChartConfig {
-  year: number
   showMonthEndLine: number | null
   showAggregate: boolean
   locale: string
@@ -66,9 +63,7 @@ export const BudgetChart: React.FC<BudgetChartProps> = (props) => {
 
   const budgetNames = dataProcessor.budgetNames
 
-  const budgetData: BudgetData[] = dataProcessor.getBudgetData()
-
-  const chartRender = new ChartRenders(budgetNames, totalBudget, TOTAL_X, TOTAL_Y, lowestY)
+  const chartRender = new ChartRenders(budgetNames, totalBudget, TOTAL_X, TOTAL_Y, lowestY, displayAmount, getMonthLabel)
 
   /* DATASETS */
   // Index 0: Budget
@@ -76,7 +71,7 @@ export const BudgetChart: React.FC<BudgetChartProps> = (props) => {
     {
       id: 'budgets',
       dimensions: BudgetData.EChartsDataSetDimensions,
-      source: budgetData
+      source: dataProcessor.getBudgetData()
     }
   ]
   const _chartDataGroupByMonth: ChartData[][] = dataProcessor.getMonthlyAggregatedChartData()
@@ -109,13 +104,11 @@ export const BudgetChart: React.FC<BudgetChartProps> = (props) => {
     renderItem: chartRender.renderBudgetLabel,
     encode: {
       x: ['xStart', 'xLength'],
-      y: ['yStart', 'yLength'],
-      tooltip: ['name'],
-      itemName: ['name']
+      y: ['yStart', 'yLength']
     },
     tooltip: {
       formatter: function (params: { value: BudgetData }, ticket: string, callback: any) {
-        return BudgetData.getEChartsTooltipFormatter(params.value, displayAmount)
+        return chartRender.budgetDataTooltipFormatter(params.value)
       },
       textStyle: {
         align: 'left'
@@ -137,13 +130,11 @@ export const BudgetChart: React.FC<BudgetChartProps> = (props) => {
         itemId: 'month',
         x: ['xStart', 'xLength'],
         y: ['yStart', 'yLength'],
-        tooltip: ['name', 'month', 'amount'],
-        itemName: ['name', 'month'],
         itemGroupId: 'month'
       },
       tooltip: {
         formatter: function (params: { value: ChartData }, ticket: string, callback: any) {
-          return ChartData.getEChartsTooltipFormatter(params.value, displayAmount, getMonthLabel)
+          return chartRender.chartDataTooltipFormatter(params.value)
         },
         textStyle: {
           align: 'left'
@@ -173,13 +164,11 @@ export const BudgetChart: React.FC<BudgetChartProps> = (props) => {
         itemId: 'month',
         x: ['xStart', 'xLength'],
         y: ['yStart', 'yLength'],
-        tooltip: ['name', 'month', 'amount'],
-        itemName: ['name', 'month'],
         itemGroupId: 'month'
       },
       tooltip: {
         formatter: function (params: { value: ChartData }, ticket: string, callback: any) {
-          return ChartData.getEChartsTooltipFormatter(params.value, displayAmount, getMonthLabel)
+          return chartRender.chartDataTooltipFormatter(params.value)
         },
         textStyle: {
           align: 'left'
@@ -203,36 +192,12 @@ export const BudgetChart: React.FC<BudgetChartProps> = (props) => {
     type: 'custom',
     name: 'total',
     id: 'total',
-    renderItem: function (param: any, api: any) {
-      const h = api.value(0) / totalBudget * TOTAL_Y
-      const start = api.coord([0, h])
-      const end = api.coord([TOTAL_X, h])
-      return {
-        type: 'line',
-        transition: ['shape'],
-        shape: {
-          x1: start[0],
-          x2: end[0],
-          y1: start[1],
-          y2: end[1]
-        },
-        style: {
-          fill: null,
-          stroke: '#e43',
-          lineWidth: 2
-        }
-      }
-    },
+    renderItem: chartRender.renderHorizontalLine.bind(chartRender, (api) => api.value(0)),
     zLevel: 40,
     z: 40,
     tooltip: {
       formatter: function (params: any, ticket: string, callback: any) {
-        return `
-                        <b>Total</b> <hr/>
-                        <div style="display: block">Annual Budget: <b style="float: right; margin-left:10px">${displayAmount(params.value[0])}</b></div>
-                        <div style="display: block">Annual Amount: <b style="float: right; margin-left:10px">${displayAmount(params.value[1])}</b></div>
-                        <div style="display: block">Left to Spend: <b style="float: right; margin-left:10px">${displayAmount(params.value[0] - params.value[1])}</b></div>
-                    `
+        return chartRender.totalLineTooltipFormatter(params.value[0], params.value[1])
       },
       textStyle: {
         align: 'left'
@@ -247,36 +212,12 @@ export const BudgetChart: React.FC<BudgetChartProps> = (props) => {
       type: 'custom',
       name: 'current',
       id: 'current',
-      renderItem: function (param: any, api: any) {
-        const h = api.value(0) / totalBudget * TOTAL_Y
-        const start = api.coord([0, h])
-        const end = api.coord([TOTAL_X, h])
-        return {
-          type: 'line',
-          transition: ['shape'],
-          shape: {
-            x1: start[0],
-            x2: end[0],
-            y1: start[1],
-            y2: end[1]
-          },
-          style: {
-            fill: null,
-            stroke: '#e71',
-            lineWidth: 2
-          }
-        }
-      },
+      renderItem: chartRender.renderHorizontalLine.bind(chartRender, (api) => api.value(0)),
       zLevel: 40,
       z: 40,
       tooltip: {
         formatter: function (params: any, ticket: string, callback: any) {
-          return `
-                            <b>Current</b> <hr/>
-                            <div style="display: block">Current Budget: <b style="float: right; margin-left:10px">${displayAmount(params.value[0])}</b></div>
-                            <div style="display: block">Current Amount: <b style="float: right; margin-left:10px">${displayAmount(params.value[1])}</b></div>
-                            <div style="display: block">Left to Spend: <b style="float: right; margin-left:10px">${displayAmount(params.value[0] - params.value[1])}</b></div>
-                        `
+          return chartRender.currentMonthEndLineTooltipFormatter(params.value[0], params.value[1])
         },
         textStyle: {
           align: 'left'

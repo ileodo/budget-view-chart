@@ -12,3 +12,5 @@ export const monthLabels = [
   'Nov',
   'Dec'
 ]
+
+export const MONTH_PER_YEAR: number = 12
