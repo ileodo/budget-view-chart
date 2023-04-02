@@ -61,15 +61,7 @@ export class ChartRenders {
 
   /* Budget */
   renderBudgetLabel = (params: any, api: any): RenderGroupItem => {
-    return {
-      type: 'group',
-      children: [
-        this.renderBudgetBlock(params, api),
-        this.renderBudgetText(params, api)
-      ],
-      focus: 'self',
-      blurScope: 'series'
-    }
+    return this.renderBudgetBlock(params, api)
   }
 
   private readonly renderBudgetText = (params: any, api: any): RenderItem => {
@@ -90,14 +82,7 @@ export class ChartRenders {
       style: baseStyle,
       emphasis: {
         style: {
-          ...baseStyle,
           fontWeight: 600
-        }
-      },
-      blur: {
-        style: {
-          ...baseStyle,
-          opacity: 0.3
         }
       }
     }
@@ -114,6 +99,9 @@ export class ChartRenders {
       fill,
       opacity: 0.3
     }
+
+    const textContent = this.renderBudgetText(params, api)
+
     if (yValue < 0) {
       baseStyle.fill = 'rgba(0, 0, 0, 0)'
       baseStyle.decal = {
@@ -143,6 +131,7 @@ export class ChartRenders {
         ...baseStyle,
         opacity: 0.3
       },
+      textContent,
       morph: true
     }
   }
