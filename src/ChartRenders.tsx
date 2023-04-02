@@ -6,18 +6,6 @@ import { type BudgetData, type ChartData } from './DataProcessor'
 type RenderItem = Record<string, any>
 type RenderGroupItem = Record<string, any>
 
-function hexToRGB (hex: string, alpha: number | null): string {
-  const r = parseInt(hex.slice(1, 3), 16)
-  const g = parseInt(hex.slice(3, 5), 16)
-  const b = parseInt(hex.slice(5, 7), 16)
-
-  if (alpha !== null) {
-    return 'rgba(' + r + ', ' + g + ', ' + b + ', ' + alpha + ')'
-  } else {
-    return 'rgb(' + r + ', ' + g + ', ' + b + ')'
-  }
-}
-
 export class ChartRenders {
   budgetNames: string[]
   totalBudget: number
@@ -61,7 +49,15 @@ export class ChartRenders {
 
   /* Budget */
   renderBudgetLabel = (params: any, api: any): RenderGroupItem => {
-    return this.renderBudgetBlock(params, api)
+    return {
+      type: 'group',
+      children: [
+        this.renderBudgetBlock(params, api),
+        this.renderBudgetText(params, api)
+      ],
+      focus: 'self',
+      blurScope: 'series'
+    }
   }
 
   private readonly renderBudgetText = (params: any, api: any): RenderItem => {
@@ -74,12 +70,18 @@ export class ChartRenders {
       textVerticalAlign: 'middle',
       opacity: 1
     }
+
     return {
       type: 'text',
       x: start[0] + size[0] / 2,
       y: api.coord([0, Math.floor(this.lowestY / 25) * 25])[1] + 30,
       rotation: -Math.PI / 2,
       style: baseStyle,
+      blur: {
+        style: {
+          opacity: 1
+        }
+      },
       emphasis: {
         style: {
           fontWeight: 600
@@ -99,8 +101,6 @@ export class ChartRenders {
       fill,
       opacity: 0.3
     }
-
-    const textContent = this.renderBudgetText(params, api)
 
     if (yValue < 0) {
       baseStyle.fill = 'rgba(0, 0, 0, 0)'
@@ -122,24 +122,22 @@ export class ChartRenders {
       },
       style: baseStyle,
       emphasis: {
-        // FIXME: doesn't work
-        ...baseStyle,
-        opacity: 0.8
+        style: {
+          opacity: 0.4
+        }
       },
       blur: {
-        // FIXME: doesn't work
-        ...baseStyle,
-        opacity: 0.3
-      },
-      textContent,
-      morph: true
+        style: {
+          opacity: 0.2
+        }
+      }
     }
   }
 
   /* Spending - Breakdown */
   renderMonthlyBreakdown = (param: any, api: any): RenderItem => {
     if (api.value('type') === 'aggregate') {
-      return this.renderMonthLegend(param, api)
+      return this.renderMonthLegendWithFocus(param, api)
     }
 
     return this.renderBreakdownBlock(param, api)
@@ -151,9 +149,11 @@ export class ChartRenders {
       type: 'group',
       ignore: api.value('type') !== 'aggregate',
       children: [
-        this.renderMonthLegend(param, api),
+        this.renderMonthLegendWithFocus(param, api),
         this.renderMonthlyAggregateBlock(param, api)
-      ]
+      ],
+      focus: 'self',
+      blurScope: 'series'
     }
   }
 
@@ -199,16 +199,30 @@ export class ChartRenders {
       },
       textContent: {
         style: baseTextStyle,
+        emphasisDisabled: false,
         emphasis: {
           style: {
             fontWeight: '600',
             fill: '#ffffff'
           }
+        },
+        blur: {
+          style: {
+            fontWeight: '600',
+            fill: '#ffffff',
+            opacity: 1
+          }
         }
       },
-      focus: 'series',
-      blurScope: 'global',
       morph: false
+    }
+  }
+
+  private readonly renderMonthLegendWithFocus = (params: any, api: any): RenderItem => {
+    return {
+      ...this.renderMonthLegend(params, api),
+      focus: 'series',
+      blurScope: 'global'
     }
   }
 
