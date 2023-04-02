@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/restrict-plus-operands */
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
-import { monthLabels } from './Constants'
+import { MONTH_PER_YEAR } from './Constants'
+import { type BudgetData, type ChartData } from './DataProcessor'
 
 const colorPalettes = [
   '#edae49',
@@ -25,12 +26,17 @@ export class ChartRenders {
   TOTAL_X: number
   TOTAL_Y: number
   lowestY: number
-  constructor (budgetNames: string[], totalBudget: number, TOTAL_X: number, TOTAL_Y: number, lowestY: number) {
+
+  numberFormatter: (number: number) => string
+  monthLabelGetter: (month: number) => string
+  constructor (budgetNames: string[], totalBudget: number, TOTAL_X: number, TOTAL_Y: number, lowestY: number, numberFormatter: (number: number) => string, monthLabelGetter: (month: number) => string) {
     this.budgetNames = budgetNames
     this.totalBudget = totalBudget
     this.TOTAL_X = TOTAL_X
     this.TOTAL_Y = TOTAL_Y
     this.lowestY = lowestY
+    this.numberFormatter = numberFormatter
+    this.monthLabelGetter = monthLabelGetter
   }
 
   renderBudgetLabel = (params: any, api: any): RenderGroupItem => {
@@ -112,7 +118,7 @@ export class ChartRenders {
   private readonly renderMonthLegend = (params: any, api: any): RenderItem => {
     const month = api.value('month')
     const boxWidthPx = 30
-    const boxHeightVal = this.TOTAL_Y / 12
+    const boxHeightVal = this.TOTAL_Y / MONTH_PER_YEAR
 
     const monthSize = api.size([0, boxHeightVal])
     const monthStart = api.coord([0, boxHeightVal * (month + 1)])
@@ -126,12 +132,12 @@ export class ChartRenders {
         width: boxWidthPx,
         height: monthSize[1]
       },
-      style: { fill: '#444444', textFill: '#c7c7c7', fontWeight: '800', opacity: 0.8, text: `${monthLabels[month]}` },
+      style: { fill: '#444444', textFill: '#c7c7c7', fontWeight: '800', opacity: 0.8, text: `${this.monthLabelGetter(month)}` },
       emphasis: {
-        style: { fill: '#444444', textFill: '#c7c7c7', fontWeight: '800', opacity: 1, text: `${monthLabels[month]}` }
+        style: { fill: '#444444', textFill: '#c7c7c7', fontWeight: '800', opacity: 1, text: `${this.monthLabelGetter(month)}` }
       },
       blur: {
-        style: { fill: '#444444', textFill: '#ffffff', fontWeight: '800', opacity: 0.8, text: `${monthLabels[month]}` }
+        style: { fill: '#444444', textFill: '#ffffff', fontWeight: '800', opacity: 0.8, text: `${this.monthLabelGetter(month)}` }
       },
       focus: 'series',
       morph: false
@@ -206,12 +212,12 @@ export class ChartRenders {
         width: size[0],
         height: size[1]
       },
-      style: { fill: '#444444', textFill: '#c7c7c7', fontWeight: '800', opacity: 0.8, text: `${monthLabels[month]}` },
+      style: { fill: '#444444', textFill: '#c7c7c7', fontWeight: '800', opacity: 0.8, text: `${this.monthLabelGetter(month)}` },
       emphasis: {
-        style: { fill: '#444444', textFill: '#c7c7c7', opacity: 1, text: `${monthLabels[month]}` }
+        style: { fill: '#444444', textFill: '#c7c7c7', opacity: 1, text: `${this.monthLabelGetter(month)}` }
       },
       blur: {
-        style: { fill: '#444444', textFill: '#ffffff', opacity: 0.8, text: `${monthLabels[month]}` }
+        style: { fill: '#444444', textFill: '#ffffff', opacity: 0.8, text: `${this.monthLabelGetter(month)}` }
       },
       focus: 'self',
       blurScope: 'global'
@@ -239,8 +245,8 @@ export class ChartRenders {
   }
 
   // TODO: use this renderLine in Chart
-  renderLine = (param: any, api: any): any => {
-    const h = api.value(0) / this.totalBudget * this.TOTAL_Y
+  renderHorizontalLine = (valueFunction: (api: any) => number, param: any, api: any): any => {
+    const h = valueFunction(api) / this.totalBudget * this.TOTAL_Y
     const start = api.coord([0, h])
     const end = api.coord([this.TOTAL_X, h])
     return {
@@ -254,9 +260,57 @@ export class ChartRenders {
       },
       style: {
         fill: null,
-        stroke: api.visual('color'),
+        stroke: '#e43',
         lineWidth: 2
       }
     }
+  }
+
+  budgetDataTooltipFormatter = (data: BudgetData): string => {
+    return `
+        <b>${data.name}</b> 
+        <p>${data.description}</p> 
+        <hr/>
+        <div style="display: block">Annual Budget: <b style="float: right; margin-left:10px">${this.numberFormatter(data.monthlyBudget * MONTH_PER_YEAR)}</b></div>
+        <div style="display: block">Annual Amount: <b style="float: right; margin-left:10px">${this.numberFormatter(data.amount)}</b></div>
+        <div style="display: block">Left to Spend: <b style="float: right; margin-left:10px">${this.numberFormatter(data.monthlyBudget * MONTH_PER_YEAR - data.amount)}</b></div>
+    `
+  }
+
+  chartDataTooltipFormatter = (data: ChartData): string => {
+    if (data.type === 'aggregate') {
+      return `
+          <b>${this.monthLabelGetter(data.month)}</b>  <hr/>
+          <div style="display: block">Monthly Total Budget: <b style="float: right; margin-left:10px">${this.numberFormatter(data.monthlyBudget)}</b></div>
+          <div style="display: block">Monthly Total Amount: <b style="float: right; margin-left:10px">${this.numberFormatter(data.amount)}</b></div>
+      `
+    } else if (data.type === 'breakdown') {
+      return `
+          <b>${data.name}</b> <br/>
+          <b>${this.monthLabelGetter(data.month)}</b> <hr/>
+          <div style="display: block">Monthly Budget: <b style="float: right; margin-left:10px">${this.numberFormatter(data.monthlyBudget)}</b></div>
+          <div style="display: block">Monthly Amount: <b style="float: right; margin-left:10px">${this.numberFormatter(data.amount)}</b></div>
+      `
+    } else {
+      throw new Error('Unknown type')
+    }
+  }
+
+  totalLineTooltipFormatter = (totalBudget: number, totalAmount: number): string => {
+    return `
+        <b>Total</b> <hr/>
+        <div style="display: block">Annual Budget: <b style="float: right; margin-left:10px">${this.numberFormatter(totalBudget)}</b></div>
+        <div style="display: block">Annual Amount: <b style="float: right; margin-left:10px">${this.numberFormatter(totalAmount)}</b></div>
+        <div style="display: block">Left to Spend: <b style="float: right; margin-left:10px">${this.numberFormatter(totalBudget - totalAmount)}</b></div>
+    `
+  }
+
+  currentMonthEndLineTooltipFormatter = (budgetToMonthEnd: number, amountToMonthEnd: number): string => {
+    return `
+        <b>Current</b> <hr/>
+        <div style="display: block">Current Budget: <b style="float: right; margin-left:10px">${this.numberFormatter(budgetToMonthEnd)}</b></div>
+        <div style="display: block">Current Amount: <b style="float: right; margin-left:10px">${this.numberFormatter(amountToMonthEnd)}</b></div>
+        <div style="display: block">Left to Spend: <b style="float: right; margin-left:10px">${this.numberFormatter(budgetToMonthEnd - amountToMonthEnd)}</b></div>
+    `
   }
 }

@@ -23,18 +23,6 @@ export class BudgetData {
     { name: 'yStart', type: 'float' },
     { name: 'yLength', type: 'float' }
   ]
-
-  // TODO: Move to Render
-  static getEChartsTooltipFormatter = (data: BudgetData, numberFormatter: (number: number) => string): string => {
-    return `
-            <b>${data.name}</b> 
-            <p>${data.description}</p> 
-            <hr/>
-            <div style="display: block">Annual Budget: <b style="float: right; margin-left:10px">${numberFormatter(data.monthlyBudget * 12)}</b></div>
-            <div style="display: block">Annual Amount: <b style="float: right; margin-left:10px">${numberFormatter(data.amount)}</b></div>
-            <div style="display: block">Left to Spend: <b style="float: right; margin-left:10px">${numberFormatter(data.monthlyBudget * 12 - data.amount)}</b></div>
-        `
-  }
 }
 
 /**
@@ -65,26 +53,6 @@ export class ChartData {
     { name: 'yStart', type: 'float' },
     { name: 'yLength', type: 'float' }
   ]
-
-  // TODO: Move to Render
-  static getEChartsTooltipFormatter = (data: ChartData, numberFormatter: (number: number) => string, monthLabelGetter: (month: number) => string): string => {
-    if (data.type === 'aggregate') {
-      return `
-                <b>${monthLabelGetter(data.month)}</b>  <hr/>
-                <div style="display: block">Monthly Total Budget: <b style="float: right; margin-left:10px">${numberFormatter(data.monthlyBudget)}</b></div>
-                <div style="display: block">Monthly Total Amount: <b style="float: right; margin-left:10px">${numberFormatter(data.amount)}</b></div>
-            `
-    } else if (data.type === 'breakdown') {
-      return `
-                <b>${data.name}</b> <br/>
-                <b>${monthLabelGetter(data.month)}</b> <hr/>
-                <div style="display: block">Monthly Budget: <b style="float: right; margin-left:10px">${numberFormatter(data.monthlyBudget)}</b></div>
-                <div style="display: block">Monthly Amount: <b style="float: right; margin-left:10px">${numberFormatter(data.amount)}</b></div>
-            `
-    } else {
-      throw new Error('Unknown type')
-    }
-  }
 }
 
 export class DataProcessor {
