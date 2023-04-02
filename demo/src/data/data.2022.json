@@ -175,7 +175,7 @@
     "description": "Yearly Bill",
     "monthlyBudget": 150,
     "monthlyAmount": [
-      700,
+      -700,
       0,
       0,
       0,
