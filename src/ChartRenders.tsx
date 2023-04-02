@@ -6,6 +6,18 @@ import { type BudgetData, type ChartData } from './DataProcessor'
 type RenderItem = Record<string, any>
 type RenderGroupItem = Record<string, any>
 
+function hexToRGB (hex: string, alpha: number | null): string {
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+
+  if (alpha !== null) {
+    return 'rgba(' + r + ', ' + g + ', ' + b + ', ' + alpha + ')'
+  } else {
+    return 'rgb(' + r + ', ' + g + ', ' + b + ')'
+  }
+}
+
 export class ChartRenders {
   budgetNames: string[]
   totalBudget: number
@@ -47,6 +59,7 @@ export class ChartRenders {
     }
   }
 
+  /* Budget */
   renderBudgetLabel = (params: any, api: any): RenderGroupItem => {
     return {
       type: 'group',
@@ -54,7 +67,6 @@ export class ChartRenders {
         this.renderBudgetBlock(params, api),
         this.renderBudgetText(params, api)
       ],
-
       focus: 'self',
       blurScope: 'series'
     }
@@ -63,22 +75,29 @@ export class ChartRenders {
   private readonly renderBudgetText = (params: any, api: any): RenderItem => {
     const start = api.coord([api.value('xStart'), 0])
     const size = api.size([api.value('xLength'), 0])
+
+    const baseStyle = {
+      text: `${api.value('name')}`,
+      textAlign: 'left',
+      textVerticalAlign: 'middle',
+      opacity: 1
+    }
     return {
       type: 'text',
       x: start[0] + size[0] / 2,
       y: api.coord([0, Math.floor(this.lowestY / 25) * 25])[1] + 30,
       rotation: -Math.PI / 2,
-      style: {
-        text: `${api.value('name')}`,
-        textAlign: 'left',
-        textVerticalAlign: 'middle'
+      style: baseStyle,
+      emphasis: {
+        style: {
+          ...baseStyle,
+          fontWeight: 600
+        }
       },
       blur: {
         style: {
-          text: `${api.value('name')}`,
-          textAlign: 'left',
-          textVerticalAlign: 'middle',
-          opacity: 1
+          ...baseStyle,
+          opacity: 0.3
         }
       }
     }
@@ -91,10 +110,13 @@ export class ChartRenders {
     const start = api.coord([api.value('xStart'), y])
     const size = api.size([api.value('xLength'), Math.abs(yValue)])
 
-    const style: any = { fill }
+    const baseStyle: Record<string, any> = {
+      fill,
+      opacity: 0.3
+    }
     if (yValue < 0) {
-      style.fill = 'rgba(0, 0, 0, 0)'
-      style.decal = {
+      baseStyle.fill = 'rgba(0, 0, 0, 0)'
+      baseStyle.decal = {
         symbol: 'rect',
         dashArrayX: [2, 0],
         dashArrayY: [3, 5],
@@ -110,15 +132,39 @@ export class ChartRenders {
         width: size[0],
         height: size[1]
       },
-      style: api.style(Object.assign(style, { opacity: 0.3 })),
+      style: baseStyle,
       emphasis: {
-        style: api.style(Object.assign(style, { opacity: 0.4 }))
+        // FIXME: doesn't work
+        ...baseStyle,
+        opacity: 0.8
       },
       blur: {
-        style: api.style(Object.assign(style, { opacity: 0.2 }))
+        // FIXME: doesn't work
+        ...baseStyle,
+        opacity: 0.3
       },
-      focus: 'self',
-      blurScope: 'series'
+      morph: true
+    }
+  }
+
+  /* Spending - Breakdown */
+  renderMonthlyBreakdown = (param: any, api: any): RenderItem => {
+    if (api.value('type') === 'aggregate') {
+      return this.renderMonthLegend(param, api)
+    }
+
+    return this.renderBreakdownBlock(param, api)
+  }
+
+  /* Spending - Aggregate */
+  renderMonthlyAggregate = (param: any, api: any): RenderGroupItem => {
+    return {
+      type: 'group',
+      ignore: api.value('type') !== 'aggregate',
+      children: [
+        this.renderMonthLegend(param, api),
+        this.renderMonthlyAggregateBlock(param, api)
+      ]
     }
   }
 
@@ -130,6 +176,14 @@ export class ChartRenders {
     const monthSize = api.size([0, boxHeightVal])
     const monthStart = api.coord([0, boxHeightVal * (month + 1)])
 
+    const baseBoxStyle: Record<string, any> = {
+      fill: '#444444',
+      opacity: 0.8
+    }
+    const baseTextStyle: Record<string, any> = {
+      fill: '#c7c7c7',
+      text: `${this.monthLabelGetter(month)}`
+    }
     return {
       type: 'rect',
       id: `month-legend-${month}`,
@@ -139,32 +193,32 @@ export class ChartRenders {
         width: boxWidthPx,
         height: monthSize[1]
       },
-      style: {
-        fill: '#444444',
-        textFill: '#c7c7c7',
-        fontWeight: '800',
-        opacity: 0.8,
-        text: `${this.monthLabelGetter(month)}`
-      },
+      style: baseBoxStyle,
       emphasis: {
         style: {
-          fill: '#444444',
-          textFill: '#c7c7c7',
-          fontWeight: '800',
-          opacity: 1,
-          text: `${this.monthLabelGetter(month)}`
+          opacity: 1
         }
       },
       blur: {
         style: {
-          fill: '#444444',
-          textFill: '#ffffff',
-          fontWeight: '800',
-          opacity: 0.8,
-          text: `${this.monthLabelGetter(month)}`
+          opacity: 0.8
+        }
+      },
+      textConfig: {
+        position: 'inside',
+        inside: true
+      },
+      textContent: {
+        style: baseTextStyle,
+        emphasis: {
+          style: {
+            fontWeight: '600',
+            fill: '#ffffff'
+          }
         }
       },
       focus: 'series',
+      blurScope: 'global',
       morph: false
     }
   }
@@ -176,10 +230,12 @@ export class ChartRenders {
     const start = api.coord([api.value('xStart'), y])
     const size = api.size([api.value('xLength'), Math.abs(yValue)])
 
-    const style: any = { fill }
+    const baseBoxStyle: Record<string, any> = {
+      fill
+    }
     if (yValue < 0) {
-      style.fill = 'rgba(0, 0, 0, 0)'
-      style.decal = {
+      baseBoxStyle.fill = 'rgba(0, 0, 0, 0)'
+      baseBoxStyle.decal = {
         symbol: 'rect',
         dashArrayX: [2, 0],
         dashArrayY: [3, 5],
@@ -195,69 +251,16 @@ export class ChartRenders {
         width: size[0],
         height: size[1]
       },
-      style,
-      // emphasis: {
-      //     style: style
-      // },
-      // blur: {
-      //     style: style,
-      // },
-      focus: 'self'
-      // blurScope: 'series',
-    }
-  }
-
-  private readonly renderMonthlyAggregateBlock = (param: any, api: any): RenderItem | null => {
-    const fill = '#321'
-    const month = api.value('month')
-    const yValue = api.value('yLength')
-    const y = yValue < 0 ? api.value('yStart') : yValue + api.value('yStart')
-    const start = api.coord([api.value('xStart'), y])
-    const size = api.size([api.value('xLength'), Math.abs(yValue)])
-
-    const style: any = { fill }
-    if (yValue < 0) {
-      style.fill = 'rgba(0, 0, 0, 0)'
-      style.decal = {
-        symbol: 'rect',
-        dashArrayX: [2, 0],
-        dashArrayY: [3, 5],
-        rotation: -Math.PI / 4,
-        color: fill
-      }
-    }
-    if (yValue === 0) {
-      return null
-    }
-    return {
-      type: 'rect',
-      shape: {
-        x: start[0],
-        y: start[1],
-        width: size[0],
-        height: size[1]
-      },
-      style: {
-        fill: '#444444',
-        textFill: '#c7c7c7',
-        fontWeight: '800',
-        opacity: 0.8,
-        text: `${this.monthLabelGetter(month)}`
-      },
+      style: baseBoxStyle,
       emphasis: {
         style: {
-          fill: '#444444',
-          textFill: '#c7c7c7',
-          opacity: 1,
-          text: `${this.monthLabelGetter(month)}`
+          stroke: '#000',
+          lineWidth: 1
         }
       },
       blur: {
         style: {
-          fill: '#444444',
-          textFill: '#ffffff',
-          opacity: 0.8,
-          text: `${this.monthLabelGetter(month)}`
+          opacity: 0.3
         }
       },
       focus: 'self',
@@ -265,30 +268,68 @@ export class ChartRenders {
     }
   }
 
-  renderMonthlyAggregate = (param: any, api: any): RenderGroupItem | null => {
-    if (api.value('type') === 'aggregate') {
-      return {
-        type: 'group',
-        children: [
-          this.renderMonthLegend(param, api),
-          this.renderMonthlyAggregateBlock(param, api)
-        ].filter(element => {
-          return element !== undefined && element !== null
-        })
+  private readonly renderMonthlyAggregateBlock = (param: any, api: any): RenderItem => {
+    const month = api.value('month')
+    const yValue = api.value('yLength')
+    const y = yValue < 0 ? api.value('yStart') : yValue + api.value('yStart')
+    const start = api.coord([api.value('xStart'), y])
+    const size = api.size([api.value('xLength'), Math.abs(yValue)])
+
+    const baseBoxStyle: Record<string, any> = {
+      fill: '#444444',
+      opacity: 0.8
+    }
+    const baseTextStyle: Record<string, any> = {
+      fill: '#c7c7c7',
+      text: `${this.monthLabelGetter(month)}`
+    }
+    if (yValue < 0) {
+      baseBoxStyle.fill = 'rgba(0, 0, 0, 0)'
+      baseBoxStyle.decal = {
+        symbol: 'rect',
+        dashArrayX: [2, 0],
+        dashArrayY: [3, 5],
+        rotation: -Math.PI / 4,
+        color: '#444444'
       }
     }
-    return null
-  }
 
-  renderMonthlyBreakdown = (param: any, api: any): RenderItem => {
-    if (api.value('type') === 'aggregate') {
-      return this.renderMonthLegend(param, api)
+    return {
+      type: 'rect',
+      shape: {
+        x: start[0],
+        y: start[1],
+        width: size[0],
+        height: size[1]
+      },
+      style: baseBoxStyle,
+      emphasis: {
+        style: {
+          opacity: 1
+        }
+      },
+      blur: {
+        style: {
+          opacity: 0.8
+        }
+      },
+      textConfig: {
+        position: 'inside',
+        inside: true
+      },
+      textContent: {
+        style: baseTextStyle,
+        emphasis: {
+          style: {
+            fontWeight: '600',
+            fill: '#ffffff'
+          }
+        }
+      },
+      ignore: yValue === 0
     }
-
-    return this.renderBreakdownBlock(param, api)
   }
 
-  // TODO: use this renderLine in Chart
   renderHorizontalLine = (valueFunction: (api: any) => number, param: any, api: any): any => {
     const h = valueFunction(api) / this.totalBudget * this.fullHeight
     const start = api.coord([0, h])
