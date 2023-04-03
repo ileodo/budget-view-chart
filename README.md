@@ -21,7 +21,7 @@ A react Chart component specialising in display budget for personal finance.
 [Demo Button Icon]: https://img.shields.io/badge/Demo-EF2D?style=for-the-badge&logoColor=white
 
 
-<p style="text-align:center;"><img src="./examples/example.png" width="800" alt="example"/></p>
+<p style="text-align:center;"><img src="./examples/1.png" width="800" alt="example"/></p>
 
 # Get Started
 
@@ -31,16 +31,40 @@ npm install budget-view-chart
 
 ```react
 <BudgetChart config={{
-                        year: 2023,
-                        month: 10,
-                        showCurrentLine: true,
-                        showAggregate: false,
-                        locale: "en-GB",
-                        currency: "GBP"
-                    }} value={dataset}/>
+  showMonthEndLine: null,
+  showAggregate: false,
+  locale: 'en-GB',
+  currency: 'GBP'}} value={dataset}/>
 
 ```
 Example `dataset` can be find in [demo/src/data/](demo/src/data/)
+
+
+# Visualisation
+
+Breakdown View
+<p style="text-align:center;"><img src="./examples/1.png" width="800" alt="example1"/></p>
+
+Highlight on Budget Item
+<p style="text-align:center;"><img src="./examples/2.png" width="800" alt="example2"/></p>
+
+Highlight on Spending in a Whole Month
+<p style="text-align:center;"><img src="./examples/3.png" width="800" alt="example3"/></p>
+
+Highlight on Spending
+<p style="text-align:center;"><img src="./examples/4.png" width="800" alt="example4"/></p>
+
+Negative Spending (Income)
+<p style="text-align:center;"><img src="./examples/5.png" width="800" alt="example5"/></p>
+
+Aggregate View
+<p style="text-align:center;"><img src="./examples/6.png" width="800" alt="example6"/></p>
+
+Over Spending
+<p style="text-align:center;"><img src="./examples/7.png" width="800" alt="example7"/></p>
+
+Current Line
+<p style="text-align:center;"><img src="./examples/8.png" width="800" alt="example8"/></p>
 
 
 # Contribution
