@@ -1,6 +1,6 @@
 {
   "name": "budget-view-chart",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "description": "A React chart component specialising in display budget for personal finance.",
   "keywords": [
     "chart",
