@@ -1,6 +1,7 @@
 node_modules
 .github
 demo
+examples
 .eslintignore
 .eslintrc.json
 nodemon.json
