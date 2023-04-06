@@ -5,3 +5,4 @@ examples
 .eslintignore
 .eslintrc.json
 nodemon.json
+.idea
