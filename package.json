@@ -3,8 +3,13 @@
   "version": "0.2.2",
   "description": "A React chart component specialising in display budget for personal finance.",
   "keywords": [
+    "react",
     "chart",
     "widget",
+    "visualization",
+    "personal-finance",
+    "data-visualization",
+    "budget-tracker",
     "echarts"
   ],
   "author": "iLeoDo",
