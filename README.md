@@ -23,7 +23,7 @@ A react Chart component specialising in display budget for personal finance.
 
 <p style="text-align:center;"><img src="./examples/1.png" width="800" alt="example"/></p>
 
-# Get Started
+## Get Started
 
 ```bash
 npm install budget-view-chart
@@ -40,7 +40,7 @@ npm install budget-view-chart
 Example `dataset` can be find in [demo/src/data/](demo/src/data/)
 
 
-# Visualisation
+## Visualisation
 
 Breakdown View
 <p style="text-align:center;"><img src="./examples/1.png" width="800" alt="example1"/></p>
@@ -67,7 +67,7 @@ Current Line
 <p style="text-align:center;"><img src="./examples/8.png" width="800" alt="example8"/></p>
 
 
-# Contribution
+## Contribution
 
 All contributions are welcomed, especially the following aspects:
 
