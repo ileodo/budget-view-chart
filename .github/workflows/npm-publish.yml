@@ -43,11 +43,7 @@ jobs:
       url: https://www.npmjs.com/package/budget-view-chart
 
     steps:
-      - name: Retrieve release distributions
-        uses: actions/download-artifact@v4
-        with:
-          name: release-dists
-          path: dist/
+      - uses: actions/checkout@v4
       # Setup .npmrc file to publish to npm
       - uses: actions/setup-node@v4
         with:
@@ -56,4 +52,9 @@ jobs:
       # Ensure npm 11.5.1 or later is installed
       - name: Update npm
         run: npm install -g npm@latest
+      - name: Retrieve release distributions
+        uses: actions/download-artifact@v4
+        with:
+          name: release-dists
+          path: dist/
       - run: npm publish
