@@ -28,7 +28,6 @@ jobs:
         with:
           name: release-dists
           path: dist/
-      - run: npm publish
 
   npm-publish:
     runs-on: ubuntu-latest
@@ -57,5 +56,4 @@ jobs:
       # Ensure npm 11.5.1 or later is installed
       - name: Update npm
         run: npm install -g npm@latest
-
       - run: npm publish
