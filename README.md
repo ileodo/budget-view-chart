@@ -39,6 +39,17 @@ npm install budget-view-chart
 ```
 Example `dataset` can be find in [demo/src/data/](demo/src/data/)
 
+To run the demo locally, build and pack the library first:
+
+```bash
+yarn install
+yarn build
+npm pack
+cd demo
+yarn install
+yarn start
+```
+
 
 ## Visualisation
 

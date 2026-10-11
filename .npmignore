@@ -1,4 +1,6 @@
 node_modules
+*.tgz
+yarn-error.log
 .github
 demo
 examples

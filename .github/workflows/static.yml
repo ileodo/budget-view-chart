@@ -40,6 +40,8 @@ jobs:
         uses: borales/actions-yarn@v4
         with:
           cmd: build
+      - name: pack budget-view-chart
+        run: npm pack
       - name: install demo
         uses: borales/actions-yarn@v4
         with:
