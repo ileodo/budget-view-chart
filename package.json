@@ -33,9 +33,6 @@
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^5.16.5",
-    "@testing-library/react": "^12.1.5",
-    "@testing-library/user-event": "^13.5.0",
-    "@types/jest": "^30.0.0",
     "@types/node": "^16.18.23",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
@@ -46,8 +43,6 @@
     "eslint-plugin-n": "^15.7.0",
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-react": "^7.32.2",
-    "jest": "^30.5.2",
-    "ts-jest": "^29.1.2",
     "ts-node": "^10.9.1",
     "tsc-watch": "^6.0.0",
     "typescript": "^5.0.3"
@@ -56,8 +51,7 @@
     "build": "tsc",
     "lint": "eslint ./",
     "watch": "tsc-watch",
-    "prepublish": "npm run build",
-    "test": "jest"
+    "prepublish": "npm run build"
   },
   "eslintConfig": {
     "extends": [

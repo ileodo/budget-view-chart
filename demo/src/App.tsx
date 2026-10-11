@@ -117,7 +117,7 @@ export const App: React.FC = (props) => {
 
 
               <dt className="col-sm-3">PUBLIC_URL</dt>
-              <dd className="col-sm-9">{process.env.PUBLIC_URL}</dd>
+              <dd className="col-sm-9">{import.meta.env.BASE_URL}</dd>
 
             </dl>
             <Form.Control as="textarea" rows={30} value={JSON.stringify(currentDataset, null, 2)}
