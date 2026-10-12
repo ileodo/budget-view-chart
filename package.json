@@ -1,6 +1,6 @@
 {
   "name": "budget-view-chart",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "A React chart component specialising in display budget for personal finance.",
   "keywords": [
     "react",
@@ -36,9 +36,9 @@
     "@types/node": "^16.18.23",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
-    "@typescript-eslint/eslint-plugin": "^8.71.1",
+    "@typescript-eslint/eslint-plugin": "^5.62.0",
     "eslint": "^8.37.0",
-    "eslint-config-standard-with-typescript": "^18.0.2",
+    "eslint-config-standard-with-typescript": "^34.0.1",
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-n": "^15.7.0",
     "eslint-plugin-promise": "^6.1.1",
