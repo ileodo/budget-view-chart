@@ -27,10 +27,10 @@ jobs:
     steps:
       - name: Check-out
         uses: actions/checkout@v3
-      - name: Use Node.js 20.x
+      - name: Use Node.js 24.x
         uses: actions/setup-node@v3
         with:
-          node-version: "20.x"
+          node-version: "24.x"
           cache: "npm"
       - name: install budget-view-chart
         uses: borales/actions-yarn@v4

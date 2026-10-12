@@ -16,11 +16,11 @@ jobs:
       # Setup .npmrc file to publish to npm
       - uses: actions/setup-node@v4
         with:
-          node-version: "20.x"
+          node-version: "24.x"
           registry-url: "https://registry.npmjs.org"
-      # Keep npm compatible with Node 20.
+      # Keep npm current for the supported Node.js LTS release.
       - name: Update npm
-        run: npm install -g npm@11.5.1
+        run: npm install -g npm@latest
       - run: npm ci
       - run: npm run build --if-present
       - name: Upload distributions
@@ -47,11 +47,11 @@ jobs:
       # Setup .npmrc file to publish to npm
       - uses: actions/setup-node@v4
         with:
-          node-version: "20.x"
+          node-version: "24.x"
           registry-url: "https://registry.npmjs.org"
-      # Keep npm compatible with Node 20.
+      # Keep npm current for the supported Node.js LTS release.
       - name: Update npm
-        run: npm install -g npm@11.5.1
+        run: npm install -g npm@latest
       - name: Retrieve release distributions
         uses: actions/download-artifact@v4
         with:
