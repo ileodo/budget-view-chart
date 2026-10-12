@@ -77,10 +77,7 @@
   },
   {
     "name": "Transport",
-    "description": [
-      "Car",
-      "Transport"
-    ],
+    "description": "Car, Transport",
     "monthlyBudget": 200,
     "monthlyAmount": [
       36.88,

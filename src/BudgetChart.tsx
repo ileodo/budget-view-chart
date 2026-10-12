@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react'
+import React from 'react'
 import ReactECharts from 'echarts-for-react'
 import { type BudgetRecord } from './data.interface'
 import { DataProcessor, BudgetData, ChartData } from './DataProcessor'
@@ -30,8 +30,6 @@ function round (number: number, precision: number): number {
 }
 
 export const BudgetChart: React.FC<BudgetChartProps> = (props) => {
-  const instance = useRef<ReactECharts>(null)
-
   const config: BudgetChartConfig = props.config
   const budgetBreakdowns: BudgetRecord[] = props.value
 
@@ -302,16 +300,5 @@ export const BudgetChart: React.FC<BudgetChartProps> = (props) => {
     series
   }
 
-  useEffect(() => {
-    const ins = instance.current?.getEchartsInstance()
-    if (ins == null) return
-    const series = getSeries(config.showAggregate, config.showMonthEndLine)
-    ins.setOption({
-      series: series.flat()
-    }, {
-      replaceMerge: ['series']
-    })
-  }, [config.showAggregate, config.showMonthEndLine])
-
-  return <ReactECharts ref={instance} option={option} style={{ height: '100%' }}/>
+  return <ReactECharts option={option} style={{ height: '100%' }}/>
 }
