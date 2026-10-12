@@ -1,11 +1,23 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { resolve } from 'node:path'
 
-const base = process.env.PUBLIC_URL
+const base = process.env.PUBLIC_URL ?? '/budget-view-chart'
 
 export default defineConfig({
   base: base ? `${base.replace(/\/$/, '')}/` : '/',
   plugins: [react()],
+  resolve: {
+    alias: {
+      'budget-view-chart': resolve(__dirname, '../src/index.ts')
+    },
+    dedupe: ['react', 'react-dom']
+  },
+  server: {
+    fs: {
+      allow: [resolve(__dirname, '..')]
+    }
+  },
   build: {
     rollupOptions: {
       output: {

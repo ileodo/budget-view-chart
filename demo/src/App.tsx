@@ -16,15 +16,20 @@ import 'bootstrap-icons/font/bootstrap-icons.css'
 import GitHubButton from 'react-github-btn'
 
 import { BudgetChart, BudgetRecord, BudgetChartConfig } from 'budget-view-chart'
+import data2021 from './data/data.2021.json'
+import data2022 from './data/data.2022.json'
+import data2023 from './data/data.2023.json'
 
-const DATA_SET: string[] = [
-  'data.2021.json',
-  'data.2022.json',
-  'data.2023.json'
-]
+const DATA_SETS: Record<string, BudgetRecord[]> = {
+  'data.2021.json': data2021,
+  'data.2022.json': data2022,
+  'data.2023.json': data2023
+}
+
+const DATA_SET = Object.keys(DATA_SETS)
 
 function loadData (name: string): BudgetRecord[] {
-  return require(`./data/${name}`)
+  return DATA_SETS[name]
 }
 
 const defaultConfig: BudgetChartConfig = {
