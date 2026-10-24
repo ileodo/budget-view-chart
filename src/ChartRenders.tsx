@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/restrict-plus-operands */
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
-import { defaultColorPalettes, MONTH_PER_YEAR, monthLabels } from './Constants'
+import { MONTH_PER_YEAR, monthLabels } from './Constants'
 import { type BudgetData, type ChartData } from './DataProcessor'
+import { type ChartColors } from './Theme'
 
 type RenderItem = Record<string, any>
 type RenderGroupItem = Record<string, any>
@@ -12,6 +13,7 @@ export class ChartRenders {
   fullWidth: number
   fullHeight: number
   lowestY: number
+  colors: ChartColors
 
   numberFormatter: (number: number) => string
   monthLabelGetter: (month: number) => string
@@ -24,13 +26,16 @@ export class ChartRenders {
     fullHeight: number,
     lowestY: number,
     locale: string,
-    currency: string
+    currency: string,
+    colorPalette: string[],
+    colors: ChartColors
   ) {
     this.budgetNames = budgetNames
     this.totalBudget = totalBudget
     this.fullWidth = fullWidth
     this.fullHeight = fullHeight
     this.lowestY = lowestY
+    this.colors = colors
     this.numberFormatter = (amount: number): string => {
       const formatter = new Intl.NumberFormat(locale, {
         style: 'currency',
@@ -43,7 +48,7 @@ export class ChartRenders {
       return monthLabels[month]
     }
     this.budgetColorGetter = (budgetName: string): string => {
-      return defaultColorPalettes[this.budgetNames.indexOf(budgetName) % defaultColorPalettes.length]
+      return colorPalette[this.budgetNames.indexOf(budgetName) % colorPalette.length]
     }
   }
 
@@ -68,6 +73,7 @@ export class ChartRenders {
       text: `${api.value('name')}`,
       textAlign: 'left',
       textVerticalAlign: 'middle',
+      fill: this.colors.text,
       opacity: 1
     }
 
@@ -166,11 +172,11 @@ export class ChartRenders {
     const monthStart = api.coord([0, boxHeightVal * (month + 1)])
 
     const baseBoxStyle: Record<string, any> = {
-      fill: '#444444',
+      fill: this.colors.legend,
       opacity: 0.8
     }
     const baseTextStyle: Record<string, any> = {
-      fill: '#c7c7c7',
+      fill: this.colors.legendText,
       text: `${this.monthLabelGetter(month)}`
     }
     return {
@@ -203,13 +209,13 @@ export class ChartRenders {
         emphasis: {
           style: {
             fontWeight: '600',
-            fill: '#ffffff'
+            fill: this.colors.legendHighlightText
           }
         },
         blur: {
           style: {
             fontWeight: '600',
-            fill: '#ffffff',
+            fill: this.colors.legendHighlightText,
             opacity: 1
           }
         }
@@ -257,7 +263,7 @@ export class ChartRenders {
       style: baseBoxStyle,
       emphasis: {
         style: {
-          stroke: '#000',
+          stroke: this.colors.text,
           lineWidth: 1
         }
       },
@@ -279,11 +285,11 @@ export class ChartRenders {
     const size = api.size([api.value('xLength'), Math.abs(yValue)])
 
     const baseBoxStyle: Record<string, any> = {
-      fill: '#444444',
+      fill: this.colors.legend,
       opacity: 0.8
     }
     const baseTextStyle: Record<string, any> = {
-      fill: '#c7c7c7',
+      fill: this.colors.legendText,
       text: `${this.monthLabelGetter(month)}`
     }
     if (yValue < 0) {
@@ -293,7 +299,7 @@ export class ChartRenders {
         dashArrayX: [2, 0],
         dashArrayY: [3, 5],
         rotation: -Math.PI / 4,
-        color: '#444444'
+        color: this.colors.legend
       }
     }
 
@@ -325,7 +331,7 @@ export class ChartRenders {
         emphasis: {
           style: {
             fontWeight: '600',
-            fill: '#ffffff'
+            fill: this.colors.legendHighlightText
           }
         }
       },
@@ -348,7 +354,7 @@ export class ChartRenders {
       },
       style: {
         fill: null,
-        stroke: '#e43',
+        stroke: this.colors.line,
         lineWidth: 2
       }
     }

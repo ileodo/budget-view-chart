@@ -1,0 +1,16 @@
+.chart-container {
+  background: #ffffff;
+  color: #111827;
+}
+
+.chart-container[data-theme='dark'] {
+  background: #111827;
+  color: #f9fafb;
+}
+
+@media (prefers-color-scheme: dark) {
+  .chart-container[data-theme='auto'] {
+    background: #111827;
+    color: #f9fafb;
+  }
+}

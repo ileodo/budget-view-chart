@@ -34,10 +34,26 @@ npm install budget-view-chart
   showMonthEndLine: null,
   showAggregate: false,
   locale: 'en-GB',
-  currency: 'GBP'}} value={dataset}/>
+  currency: 'GBP',
+  theme: 'auto',
+  themeColors: {
+    light: {
+      background: '#ffffff',
+      text: '#263238',
+      colorPalette: ['#edae49', '#d1495b', '#00798c']
+    },
+    dark: {
+      background: '#111827',
+      text: '#f9fafb',
+      colorPalette: ['#ffd166', '#ef476f', '#06d6a0']
+    }
+  }
+}} value={dataset}/>
 
 ```
 Example `dataset` can be find in [demo/src/data/](demo/src/data/)
+
+`theme` can be `'light'`, `'dark'`, or `'auto'`. It defaults to `'auto'`, which follows the system color scheme and updates when that scheme changes. `themeColors` lets you override colors for either mode. Each mode can set `background`, `text`, `axis`, `splitLine`, `legend`, `legendText`, `legendHighlightText`, `line`, `tooltipBackground`, `tooltipBorder`, `tooltipText`, and `colorPalette`. Unset colors use the built-in theme. The default background is transparent, so set the container background to match the theme unless you provide `background`. Each mode's `colorPalette` sets the budget item colors in order. Colors repeat when there are more budget items than colors. If you omit a palette or pass an empty array, that mode uses the built-in palette.
 
 To run the demo with live changes to the library source, use Yarn 1:
 
