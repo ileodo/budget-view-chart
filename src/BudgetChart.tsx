@@ -1,9 +1,10 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import ReactECharts from 'echarts-for-react'
 import { type BudgetRecord } from './data.interface'
 import { DataProcessor, BudgetData, ChartData } from './DataProcessor'
 import { ChartRenders } from './ChartRenders'
 import { MONTH_PER_YEAR } from './Constants'
+import { defaultThemeColors, type BudgetChartTheme, type BudgetChartThemeColors } from './Theme'
 
 // DEFINE
 const FULL_WIDTH = 100
@@ -15,6 +16,10 @@ export interface BudgetChartConfig {
   showAggregate: boolean
   locale: string
   currency: string
+  /** Chart theme. Auto follows the system color scheme. Defaults to auto. */
+  theme?: BudgetChartTheme
+  /** Optional color overrides for each theme. */
+  themeColors?: BudgetChartThemeColors
 }
 
 export interface BudgetChartProps {
@@ -32,6 +37,29 @@ function round (number: number, precision: number): number {
 export const BudgetChart: React.FC<BudgetChartProps> = (props) => {
   const config: BudgetChartConfig = props.config
   const budgetBreakdowns: BudgetRecord[] = props.value
+  const [systemDark, setSystemDark] = useState(() =>
+    typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-color-scheme: dark)').matches
+  )
+
+  useEffect(() => {
+    if (config.theme !== undefined && config.theme !== 'auto') return
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return
+
+    const media = window.matchMedia('(prefers-color-scheme: dark)')
+    const onChange = (event: MediaQueryListEvent): void => { setSystemDark(event.matches) }
+    setSystemDark(media.matches)
+    media.addEventListener('change', onChange)
+    return () => { media.removeEventListener('change', onChange) }
+  }, [config.theme])
+
+  const activeTheme = config.theme === 'dark' || (config.theme !== 'light' && systemDark) ? 'dark' : 'light'
+  const themeConfig = config.themeColors?.[activeTheme]
+  const colors = { ...defaultThemeColors[activeTheme], ...themeConfig }
+  const palette = themeConfig?.colorPalette !== undefined && themeConfig.colorPalette.length > 0
+    ? themeConfig.colorPalette
+    : defaultThemeColors[activeTheme].colorPalette
 
   const dataProcessor = new DataProcessor(budgetBreakdowns, FULL_WIDTH, FULL_HEIGHT)
 
@@ -41,7 +69,7 @@ export const BudgetChart: React.FC<BudgetChartProps> = (props) => {
   const lowestY = Math.min(0, dataProcessor.getLowestY())
 
   const budgetNames = dataProcessor.budgetNames
-  const chartRender = new ChartRenders(budgetNames, totalBudget, FULL_WIDTH, FULL_HEIGHT, lowestY, config.locale, config.currency)
+  const chartRender = new ChartRenders(budgetNames, totalBudget, FULL_WIDTH, FULL_HEIGHT, lowestY, config.locale, config.currency, palette, colors)
 
   /* DATASETS */
   // Index 0: Budget
@@ -220,6 +248,9 @@ export const BudgetChart: React.FC<BudgetChartProps> = (props) => {
 
   const series = getSeries(config.showAggregate, config.showMonthEndLine)
   const option = {
+    backgroundColor: colors.background,
+    color: palette,
+    textStyle: { color: colors.text },
     title: {
       show: false
     },
@@ -237,7 +268,10 @@ export const BudgetChart: React.FC<BudgetChartProps> = (props) => {
       }
     },
     tooltip: {
-      trigger: 'item'
+      trigger: 'item',
+      backgroundColor: colors.tooltipBackground,
+      borderColor: colors.tooltipBorder,
+      textStyle: { color: colors.tooltipText }
     },
     dataset: [budgetDataSet, spendingBreakdownDataSet, spendingAggregateDataSet].flat(),
     xAxis: {
@@ -247,14 +281,18 @@ export const BudgetChart: React.FC<BudgetChartProps> = (props) => {
       splitNumber: 5,
       axisLabel: {
         show: true,
+        color: colors.text,
         formatter: function (value: any, index: any) {
           // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
           return `${value}%`
         }
       },
       axisLine: {
-        show: true
-      }
+        show: true,
+        lineStyle: { color: colors.axis }
+      },
+      axisTick: { lineStyle: { color: colors.axis } },
+      splitLine: { lineStyle: { color: colors.splitLine } }
     },
     yAxis: [
       {
@@ -267,7 +305,7 @@ export const BudgetChart: React.FC<BudgetChartProps> = (props) => {
           show: false
         },
         axisLine: {
-          lineStyle: {}
+          lineStyle: { color: colors.axis }
         },
         axisTick: {
           show: false
@@ -281,6 +319,7 @@ export const BudgetChart: React.FC<BudgetChartProps> = (props) => {
         position: 'right',
         axisLabel: {
           show: true,
+          color: colors.text,
           formatter: function (value: number, index: any) {
             const rounded = round(value, 2)
             if (rounded % 25 !== 0) {
@@ -291,7 +330,7 @@ export const BudgetChart: React.FC<BudgetChartProps> = (props) => {
           }
         },
         axisLine: {
-          lineStyle: {}
+          lineStyle: { color: colors.axis }
         },
         axisTick: {
           inside: false
@@ -300,5 +339,5 @@ export const BudgetChart: React.FC<BudgetChartProps> = (props) => {
     series
   }
 
-  return <ReactECharts option={option} style={{ height: '100%' }}/>
+  return <ReactECharts option={option} style={{ height: '100%' }} notMerge />
 }

@@ -15,7 +15,7 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap-icons/font/bootstrap-icons.css'
 import GitHubButton from 'react-github-btn'
 
-import { BudgetChart, BudgetRecord, BudgetChartConfig } from 'budget-view-chart'
+import { BudgetChart, BudgetRecord, BudgetChartConfig, defaultThemeColors } from 'budget-view-chart'
 import data2021 from './data/data.2021.json'
 import data2022 from './data/data.2022.json'
 import data2023 from './data/data.2023.json'
@@ -36,25 +36,28 @@ const defaultConfig: BudgetChartConfig = {
   showMonthEndLine: 3,
   showAggregate: false,
   locale: 'en-GB',
-  currency: 'GBP'
+  currency: 'GBP',
+  theme: 'auto',
+  themeColors: {
+    light: { ...defaultThemeColors.light },
+    dark: { ...defaultThemeColors.dark }
+  }
 }
 
 export const App: React.FC = (props) => {
   const [dataSet, setDataSet] = useState<string>('data.2023.json')
   const [currentDataset, setCurrentDataset] = useState<BudgetRecord[]>(loadData(dataSet))
   const [config, setConfig] = useState<BudgetChartConfig>(defaultConfig)
-  const [showAggregate, setShowAggregate] = useState<boolean>(defaultConfig.showAggregate)
+  const [configText, setConfigText] = useState<string>(JSON.stringify(defaultConfig, null, 2))
+
+  const updateConfig = (nextConfig: BudgetChartConfig): void => {
+    setConfig(nextConfig)
+    setConfigText(JSON.stringify(nextConfig, null, 2))
+  }
 
   useEffect(() => {
     setCurrentDataset(loadData(dataSet))
   }, [dataSet])
-
-  useEffect(() => {
-    setConfig((prevConfig) => ({
-      ...prevConfig,
-      showAggregate: showAggregate
-    }))
-  }, [showAggregate])
 
   return (
     <Container as="main" className="py-4">
@@ -67,7 +70,7 @@ export const App: React.FC = (props) => {
         </div>
         <div className="clearfix"></div>
       </header>
-      <Container className="h-100 px-1 py-3 p-md-5 mb-4 bg-light rounded-3 shadow">
+      <Container className="h-100 px-1 py-3 p-md-5 mb-4 rounded-3 shadow chart-container" data-theme={config.theme ?? 'auto'}>
         <div className="p-5" style={{ height: 'calc(min(800px,100vh))' }}>
           <BudgetChart config={config} value={currentDataset}/>
         </div>
@@ -77,22 +80,31 @@ export const App: React.FC = (props) => {
           <Col className="col-md-6">
             <h3 className="pb-3 px-3 px-md-0 border-bottom">Config</h3>
 
+            <Form.Select aria-label="Chart theme" value={config.theme ?? 'auto'}
+                         onChange={(event) => updateConfig({ ...config, theme: event.target.value as BudgetChartConfig['theme'] })}>
+              <option value="auto">Auto theme</option>
+              <option value="light">Light theme</option>
+              <option value="dark">Dark theme</option>
+            </Form.Select>
+
             <Form.Switch inline
                          id="switch-aggregate"
                          label="Aggregate Budgets"
-                         checked={showAggregate}
+                         checked={config.showAggregate}
                          onChange={
                            (val: any) => {
-                             setShowAggregate(!showAggregate)
+                             updateConfig({ ...config, showAggregate: !config.showAggregate })
                            }}
             />
 
-            <Form.Control as="textarea" rows={10} value={JSON.stringify(config, null, 2)}
+            <Form.Control as="textarea" rows={32} aria-label="Chart config" value={configText}
                           onChange={(v) => {
-                            v.preventDefault()
+                            setConfigText(v.target.value)
                             try {
-                              const data = JSON.parse(v.target.value)
-                              setConfig(data)
+                              const data: unknown = JSON.parse(v.target.value)
+                              if (typeof data === 'object' && data !== null && !Array.isArray(data)) {
+                                setConfig(data as BudgetChartConfig)
+                              }
                             } catch (error) {
                             }
                           }}
